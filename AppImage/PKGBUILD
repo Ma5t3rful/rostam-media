@@ -1,0 +1,28 @@
+pkgname=rostam-media
+pkgver=0.0.1
+pkgrel=6
+pkgdesc="Unofficial app for extracting from Rostam Media's satelite TV channel."
+arch=('x86_64')
+url="https://github.com/ma5t3rful/rostam-media"
+license=('GPL')
+depends=(glfw)
+makedepends=(base-devel cmake ninja gcc glfw)
+provides=(rostam-media)
+conflicts=()
+replaces=()
+source=("https://github.com/Ma5t3rful/rostam-media/archive/refs/tags/0.0.1.tar.gz")
+md5sums=('SKIP') 
+
+
+build() {
+    mkdir -p build
+	cmake -B build/ -GNinja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr
+	cmake --build build --config Release
+}
+
+package() {
+    ls
+	cmake --install build --config Release
+	mkdir -p ${pkgdir}/usr/share/rostam_theme/
+	cp build/dark.txt ${pkgdir}/usr/share/rostam_theme/dark.txt
+}

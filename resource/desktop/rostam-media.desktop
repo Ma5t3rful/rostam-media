@@ -1,0 +1,15 @@
+[Desktop Entry]
+Type=Application
+Version=1.0
+Name=Rostam Media for linux
+Name[en]=Rostam Media
+Name[fa]=رستم مدیا
+GenericName=Unofficial Rostam Media client
+Terminal=false
+Comment=An unofficial Rostam Media desktop application.
+Comment[en]=An unofficial Rostam Media desktop application.
+Comment[fa]=نسخه رومیزی غیر رسمی برنامه ی رستم مدیا
+Keywords=tv;television;extract;media;satellite
+Exec=rostam-media
+Icon=rostam-media
+Categories=AudioVideo;Archiving;

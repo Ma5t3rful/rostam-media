@@ -1,0 +1,13 @@
+.cache
+.cmake
+_*_/
+0000
+AppImage/arch*
+build/
+*.so
+*.h
+*.a
+*.c
+*.tar.gz
+*.AppImage
+*.zsync
