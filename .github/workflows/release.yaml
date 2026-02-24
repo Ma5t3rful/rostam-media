@@ -1,0 +1,35 @@
+name: Build and Release AppImage
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Build AppImage
+        run: |
+          sudo apt update && sudo apt install desktop-file-utils
+          sudo sysctl -w kernel.apparmor_restrict_unprivileged_unconfined=0
+          sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0
+          chmod +x AppImage/rostam-media-anylinux.sh  # Ensure the script is executable
+          ./AppImage/rostam-media-anylinux.sh
+          mkdir generated-appimage
+          mv AppImage/*.AppImage generated-appimage/rostam-media.AppImage
+          echo generated and moved the appimage - final output file in generated-appimage:
+          ls generated-appimage
+
+      - name: Upload AppImage to release
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ github.event.release.upload_url }}
+          asset_path: ./generated-appimage/rostam-media.AppImage 
+          asset_name: rostam-media.AppImage 
+          asset_content_type: application/octet-stream
