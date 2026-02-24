@@ -18,7 +18,9 @@ jobs:
           sudo sysctl -w kernel.apparmor_restrict_unprivileged_unconfined=0
           sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0
           chmod +x AppImage/rostam-media-anylinux.sh  # Ensure the script is executable
-          ./AppImage/rostam-media-anylinux.sh
+          cd AppImage
+          ./rostam-media-anylinux.sh
+          cd ..
           mkdir generated-appimage
           mv AppImage/*.AppImage generated-appimage/rostam-media.AppImage
           echo generated and moved the appimage - final output file in generated-appimage:
