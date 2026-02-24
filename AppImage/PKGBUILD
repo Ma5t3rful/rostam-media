@@ -10,7 +10,7 @@ makedepends=(base-devel cmake ninja gcc glfw)
 provides=(rostam-media)
 conflicts=()
 replaces=()
-source=("https://github.com/Ma5t3rful/rostam-media/archive/refs/tags/0.0.1.tar.gz")
+source=("git+https://github.com/Ma5t3rful/rostam-media.git")
 md5sums=('SKIP') 
 
 
