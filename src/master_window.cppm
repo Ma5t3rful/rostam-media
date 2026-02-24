@@ -17,8 +17,9 @@ public tgui::Gui
 {
     public:
     MainWindow(GLFWwindow*);
+    ~MainWindow();
     private:
-    
+
     tgui::GrowVerticalLayout::Ptr main_controls;
     std::shared_ptr<rostam_logo> rostam_logo_pic;
 

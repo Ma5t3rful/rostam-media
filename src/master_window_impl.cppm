@@ -1,4 +1,5 @@
 module;
+#include <chrono>
 #include <future>
 #include <stdexcept>
 #include <filesystem>
@@ -133,4 +134,9 @@ void MainWindow::add_dialog (const std::string_view title, const std::string_vie
     message_dialog->setPosition("50%","50%");
     message_dialog->onButtonPress(&tgui::MessageBox::close,message_dialog);
     add(message_dialog);
+}
+
+MainWindow::~MainWindow()
+{
+    if(m_extraction_progress_thrd.valid() and m_extraction_progress_thrd.wait_for(std::chrono::microseconds(0)) == std::future_status::ready)m_extraction_progress_thrd.get();
 }
