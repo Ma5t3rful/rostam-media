@@ -1,8 +1,9 @@
 name: Build and Release AppImage
 
 on:
-  release:
-    types: [published]
+  push:
+    tags:
+      - 'v*'
 
 jobs:
   build:
@@ -26,12 +27,23 @@ jobs:
           echo generated and moved the appimage - final output file in generated-appimage:
           ls generated-appimage
 
+      - name: Create Release
+        uses: actions/create-release@v1
+        id: create_release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.ref }}
+          release_name: Release ${{ github.ref_name }}
+          draft: false
+          prerelease: false
+
       - name: Upload AppImage to release
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          upload_url: ${{ github.event.release.upload_url }}
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
           asset_path: ./generated-appimage/rostam-media.AppImage 
           asset_name: rostam-media.AppImage 
           asset_content_type: application/octet-stream
