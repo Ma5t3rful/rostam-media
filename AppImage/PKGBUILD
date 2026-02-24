@@ -23,6 +23,7 @@ build() {
 
 package() {
     ls
+	cd rostam-media
 	cmake --install build --config Release
 	mkdir -p ${pkgdir}/usr/share/rostam_theme/
 	cp build/dark.txt ${pkgdir}/usr/share/rostam_theme/dark.txt
