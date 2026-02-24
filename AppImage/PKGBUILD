@@ -15,6 +15,7 @@ md5sums=('SKIP')
 
 
 build() {
+	cd rostam-media
     mkdir -p build
 	cmake -B build/ -GNinja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr
 	cmake --build build --config Release
