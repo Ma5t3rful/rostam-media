@@ -52,6 +52,7 @@ export class rostam{
 
     auto reset_state(const bool no_log) -> void
     {
+        std::println("Reset Called");
         if (!no_log) 
         {
            std::println("Scanning for files to extract...");
@@ -64,6 +65,11 @@ export class rostam{
         // this.fileData = []; // Data that has been read for current file. Array of Uint8Arrays (I think its never used)
         this->m_file_data_read = 0uz; // How much file data has been read so far
         // this.cancelFlag = false;
+            std::filesystem::path m_output_path;
+        
+        currentEQHeader.erase(currentEQHeader.begin(),currentEQHeader.end());
+        currentEQHeaderBytesRead = 0;
+        previousPacketMagicBytePatternIndex = 0;
     }
 
 
@@ -435,6 +441,7 @@ export class rostam{
 
     void extract (const std::filesystem::path& input, const std::filesystem::path& output)
     {
+        throw std::runtime_error("error test");
         constexpr static auto ts_packet_size = 188uz;
         m_output_path = output;
         const auto input_ts_size =  std::filesystem::file_size(input);
