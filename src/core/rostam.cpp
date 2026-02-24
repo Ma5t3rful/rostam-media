@@ -441,7 +441,6 @@ export class rostam{
 
     void extract (const std::filesystem::path& input, const std::filesystem::path& output)
     {
-        throw std::runtime_error("error test");
         constexpr static auto ts_packet_size = 188uz;
         m_output_path = output;
         const auto input_ts_size =  std::filesystem::file_size(input);
