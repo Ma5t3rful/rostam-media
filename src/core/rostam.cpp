@@ -49,6 +49,30 @@ export class rostam{
     {
         
     }
+    
+    void extract (const std::filesystem::path& input, const std::filesystem::path& output)
+    {
+        constexpr static auto ts_packet_size = 188uz;
+        m_output_path = output;
+        const auto input_ts_size =  std::filesystem::file_size(input);
+        std::ifstream input_ts_file (input,std::ios::binary);
+        std::array <int,ts_packet_size*20> input_chunk; //lets get 20 packets at once
+
+        for(auto i = 0uz ; i < input_ts_size / (ts_packet_size*20) ; i++)
+        {
+            std::ranges::generate (input_chunk,[&input_ts_file]{return input_ts_file.get();});
+            std::ranges::for_each(input_chunk|std::views::chunk(ts_packet_size),std::bind_front(
+                &rostam::parse_ts_packets,this));
+            if(i%20 == 0)
+            {
+                // get percent value and force it to be 99 after the extraction we call the callback with 100.
+                if(m_progress_callback)m_progress_callback(std::min<int>(i*100/static_cast<float>(input_ts_size / (ts_packet_size*20)),99));
+            }
+        }
+        if(m_progress_callback)m_progress_callback(100);
+    }
+
+    private:
 
     auto reset_state(const bool no_log) -> void
     {
@@ -439,27 +463,6 @@ export class rostam{
     }
     
 
-    void extract (const std::filesystem::path& input, const std::filesystem::path& output)
-    {
-        constexpr static auto ts_packet_size = 188uz;
-        m_output_path = output;
-        const auto input_ts_size =  std::filesystem::file_size(input);
-        std::ifstream input_ts_file (input,std::ios::binary);
-        std::array <int,ts_packet_size*20> input_chunk; //lets get 20 packets at once
-
-        for(auto i = 0uz ; i < input_ts_size / (ts_packet_size*20) ; i++)
-        {
-            std::ranges::generate (input_chunk,[&input_ts_file]{return input_ts_file.get();});
-            std::ranges::for_each(input_chunk|std::views::chunk(ts_packet_size),std::bind_front(
-                &rostam::parse_ts_packets,this));
-            if(i%20 == 0)
-            {
-                // get percent value and force it to be 99 after the extraction we call the callback with 100.
-                if(m_progress_callback)m_progress_callback(std::min<int>(i*100/static_cast<float>(input_ts_size / (ts_packet_size*20)),99));
-            }
-        }
-        if(m_progress_callback)m_progress_callback(100);
-    }
     
 
     private:
