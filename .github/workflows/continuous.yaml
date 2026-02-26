@@ -1,0 +1,35 @@
+name: Continuous Build AppImage
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Build AppImage
+        run: |
+          sudo apt update && sudo apt install desktop-file-utils
+          sudo sysctl -w kernel.apparmor_restrict_unprivileged_unconfined=0
+          sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0
+          chmod +x AppImage/rostam-media-anylinux.sh
+          cd AppImage
+          ./rostam-media-anylinux.sh
+          cd ..
+          mkdir generated-appimage
+          mv AppImage/*.AppImage generated-appimage/rostam-media.AppImage
+          echo generated and moved the appimage - final output file in generated-appimage:
+          ls generated-appimage
+
+      - name: Upload AppImage as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: rostam-media-appimage
+          path: ./generated-appimage/rostam-media.AppImage
+          retention-days: 30
