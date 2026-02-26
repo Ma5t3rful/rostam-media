@@ -3,10 +3,16 @@
 #include <array>
 #include <filesystem>
 #include <algorithm>
+#include <print>
 import master_window;
 
 auto main (int argc, char** argv) -> int
 {
+    std::println("Initializing Rostam...");
+    glfwSetErrorCallback([](const auto err_code,const auto desc)
+    {
+        std::println("\033[31m[ROSTAM GLFW ERROR]\033[0m glfw error detected: {} - {}", err_code, desc);
+    });
     glfwInit();
     auto* window = glfwCreateWindow(1000, 500, "Rostam Media", nullptr, nullptr);
     glfwMakeContextCurrent(window);
@@ -21,8 +27,10 @@ auto main (int argc, char** argv) -> int
         tgui::Theme::setDefault((appdir/std::filesystem::path("share/rostam_theme/dark.txt")).c_str());
     }
     
-    
-    MainWindow gui(window);
-    gui.mainLoop("#211f1f");
+    {// scope for gui to be destroyed before calling terminate
+        MainWindow gui(window);
+        gui.mainLoop("#211f1f");
+    }
     glfwDestroyWindow(window);
+    glfwTerminate();
 }
