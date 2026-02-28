@@ -10,7 +10,7 @@ include(FetchContent)
 set(FETCHCONTENT_QUIET FALSE)
 FetchContent_Declare( #TODO: Switch from nightly to stable
     TGUI
-    URL "https://github.com/texus/TGUI/archive/refs/tags/nightly_build.tar.gz"
+    URL "https://github.com/texus/TGUI/archive/refs/tags/v1.12.0.tar.gz"
 )
 FetchContent_MakeAvailable(TGUI)
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/resource/dark.txt  ${CMAKE_CURRENT_BINARY_DIR} COPYONLY)
