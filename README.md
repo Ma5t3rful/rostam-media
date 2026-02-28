@@ -17,4 +17,6 @@ You can download the AppImage from the "Releases" page.
 ## NOTICE
 #### This app is unofficial. This software is NOT affiliated with or endorsed by Rostam Media.
 
-Made with love. ❤️
+Made with love. 
+
+`☕🧑‍💻🍕`

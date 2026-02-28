@@ -13,6 +13,7 @@ module;
 #include <optional>
 #include <vector>
 #include <ranges>
+#include <cctype>
 export module rostam;
 
 
@@ -300,7 +301,7 @@ export class rostam{
             const auto to_copy = std::min(payload.size(), bytesRemaining);
             std::println("trying to copy from payload to currentEQHeader in checkForEQHeader() in the first if-statement to_copy is: {} and payload.size() is: {}",to_copy,payload.size());
             if(to_copy > payload.size())throw std::logic_error("to_copy > payload.size()");
-            std::ranges::copy_n(payload.begin(), to_copy, std::back_inserter(currentEQHeader));
+            std::ranges::copy_n(payload.begin(), to_copy, currentEQHeader.begin());
             // buffer.copy (target              , targetStart                  , sourceStart, sourceEnd);
             // payload.copy(this.currentEQHeader, this.currentEQHeaderBytesRead, 0, to_copy);
             if(to_copy < bytesRemaining) return -1;
@@ -310,7 +311,7 @@ export class rostam{
         const auto header_offset = findMagicBytes(payload);
         if(header_offset < 0) return -1;
 
-        this->currentEQHeader = std::vector<int>();
+        this->currentEQHeader = std::vector<int>(EQSAT_HEADER_SIZE_WITHOUT_MAGIC_BYTES);
 
         // If the beginning of the header (after the magic bytes) was found
         // but the header is bigger than the remaining payload of the packet
@@ -319,14 +320,14 @@ export class rostam{
             const auto toRead = payload.size() - header_offset;
             // Copy the bytes beginning at the header offset in the payload to this.currentEQHeader
             std::println("trying to copy data in checkForEQHeader() second if-statement");
-            std::ranges::copy(payload.cbegin()+header_offset,payload.cend(),std::back_inserter(currentEQHeader));
+            std::ranges::copy(payload.cbegin()+header_offset,payload.cend(),currentEQHeader.begin());
             // buffer.copy (target,         targetStart , sourceStart);
             // payload.copy(this.currentEQHeader, 0     , headerOffset);
             currentEQHeaderBytesRead = toRead;
             return -1;
         }
         std::println("trying to copy data in checkForEQHeader() no cond");
-        std::ranges::copy_n(payload.begin()+header_offset,EQSAT_HEADER_SIZE_WITHOUT_MAGIC_BYTES,std::back_inserter(currentEQHeader));
+        std::ranges::copy_n(payload.cbegin()+header_offset,EQSAT_HEADER_SIZE_WITHOUT_MAGIC_BYTES,currentEQHeader.begin());
         std::println("Done current eQHeader is: {}",currentEQHeader);
         //buffer. copy( target,        targetStart, sourceStart, sourceEnd )
         //payload.copy(this.currentEQHeader, 0, headerOffset, headerOffset + EQSAT_HEADER_SIZE_WITHOUT_MAGIC_BYTES);
@@ -384,7 +385,8 @@ export class rostam{
             //std::println("we have payload!");
             const auto toCopyMax = this->m_buffer.size() - this->bufferLength;
             const auto toCopy = std::min(ts_header->payload.size() - static_cast<std::size_t>(curPayloadOffset), toCopyMax);
-            std::ranges::copy_n(ts_header->payload.begin()+curPayloadOffset,toCopy,m_buffer.begin());
+            
+            std::ranges::copy_n(ts_header->payload.begin()+curPayloadOffset,toCopy,m_buffer.begin()+bufferLength);
 
             //tsHeader->payload.copy(this.buffer, this.bufferLength, curPayloadOffset, curPayloadOffset + toCopy);
             this->bufferLength += toCopy;
@@ -393,17 +395,21 @@ export class rostam{
             if(this->bufferLength >= this->m_buffer.size())
             {
                 m_state = rostam::STATE:: STATE_READING_FILE;
+                // It seems like sometimes the EQHeader::filename_length returns wrong size thus
+                // the filenames can contain bytes from the next(?) magic bytes.
+                // NOTE: the official EQSat app sanitizes the filenames so files can only use ascii characters as their names. (A-Z a-z 0-9 etc)
+                // the code below can achieve most of the sanitizer algorithm.
+                filename = m_buffer 
+                | std::views::drop_while([](const auto c){return c == '.';}) //removes the first '.' if exists
+                | std::views::filter([](const auto c){return isascii(c) and not std::iscntrl(c);}) // actual sanitiser
+                | std::ranges::to<std::string>();
 
-                std::ranges::copy(m_buffer,std::back_inserter(filename));
                 std::println("Extracting file:  {}" , filename);
-
                 // TODO is Number big enough?
                 m_buffer = std::vector<unsigned char>(this->eQHeader.file_size);
                 bufferLength = 0;
 
-                // If an output dir is specified and this is running in node.js
                 // then write files to the dir as they are extracted
-                // MY TODO: HARDCODED ADDRESS YOU NEED TO ADD IT TO CONSTRUCTOR PARAMS
                 const auto output_file_path = m_output_path/(filename + ".part");
                 
                 //try {
@@ -462,9 +468,7 @@ export class rostam{
         }
     }
     
-
     
-
     private:
     enum class STATE {
         STATE_SEARCHING_FOR_HEADER = 0, // Searching for eQsat header

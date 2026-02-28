@@ -5,7 +5,6 @@ _*_/
 AppImage/arch*
 build/
 *.so
-*.h
 *.a
 *.c
 *.tar.gz
