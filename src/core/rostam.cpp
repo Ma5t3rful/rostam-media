@@ -177,7 +177,7 @@ export class rostam{
     {
         constexpr auto static this_pid = 6530;
         TSHeader header;
-
+        
         if(packet[0] != 0x47) {
             header.syncByte = false;
             return header;
@@ -340,7 +340,7 @@ export class rostam{
     {
         // constexpr auto packet_size = 188uz;
         // if(packet.size() < 4) return ;
-        if(packet.at(0) != 0x47)throw std::logic_error("Out of sync detected");
+        if(packet.at(0) != 0x47)std::println("WARNING: Out of sync detected: 0x{:X}", packet.at(0));
         // If the packet is smaller than the MPEG-TS packet header, skip
         if(packet.size() < 4) return;
 
