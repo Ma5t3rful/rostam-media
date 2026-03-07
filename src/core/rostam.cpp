@@ -230,7 +230,7 @@ export class rostam{
             header.payloadLength -= pesAndAC3HeaderSize;
 
             // Creates a view on the packet buffer 
-            if(static_cast<std::size_t>(header.payloadOffset) > packet.size())throw std::logic_error("bad subspan");
+            if(header.payloadLength < 0) return std::nullopt; // Sometimes the algorithm returns negative values as length! The original doesn't do anything for it but I beleive that it will be rejected somewhere in the code. Let's ignore those packets.
             header.payload = packet.subspan(header.payloadOffset, header.payloadLength);
         }
         // if(m_debug)std::println("header TSC : {}\nheader AFC: {}\nhreader CC: {}\nheader:payload:\n{}",header.TSC,header.AFC,header.CC,header.payload|std::views::transform([](const auto v){return std::format("{:0>2x}",v);}));
