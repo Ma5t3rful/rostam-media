@@ -401,10 +401,10 @@ export class rostam{
                 // the code below can achieve most of the sanitizer algorithm.
                 filename = m_buffer 
                 | std::views::drop_while([](const auto c){return c == '.';}) //removes the first '.' if exists
-                | std::views::filter([](const auto c){return isascii(c) and not std::iscntrl(c);}) // actual sanitiser
+                | std::views::filter([](const auto c){return isascii(c) and not std::iscntrl(c);}) // actual sanitizer
                 | std::ranges::to<std::string>();
 
-                std::println("Extracting file:  {}" , filename);
+                std::println("Extracting file: {}", filename);
                 // TODO is Number big enough?
                 m_buffer = std::vector<unsigned char>(this->eQHeader.file_size);
                 bufferLength = 0;
@@ -440,13 +440,13 @@ export class rostam{
             if(this->m_current_output_file) 
             {
                 // MY TODO: this is really inefficent I need to rip a lot of things to convert the payload to unsigned char
-                //it's safe at least
+                // It's safe at least
                 for(const auto s : chunk)m_current_output_file.put(s);
                 // fs.writeSync(this->m_current_output_file, chunk);
                 
                 //}catch(...) {
                 
-                //return cb(err); 
+                   //return cb(err); 
                 //}
             }
             /*else 
@@ -461,6 +461,10 @@ export class rostam{
             {
                 // this.curOutFile = null; // WTF is this
                 m_current_output_file.close();
+                // MY TODO: Sometimes a healthy file gets overritten by a broken one. This usually happens with heavier files like videos. 
+                // Rostam Media does not provide a proper way to handle these types of errors so we have to verify the files on our own. 
+                // We can check the structure of certain files like videos or...
+
                 std::filesystem::rename(m_output_path/(filename+".part"),m_output_path/filename);
                 std::println("Completed extraction of file:\n  {}", this->filename);
                 reset_state(false);    
