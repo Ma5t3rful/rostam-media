@@ -13,6 +13,7 @@ import master_window;
 import better_checkbox;
 import rostam_logo;
 import rostam;
+import modal_dialog;
 
 MainWindow::MainWindow(GLFWwindow* window):
 tgui::Gui(window),
@@ -123,10 +124,12 @@ void MainWindow::on_extraction_progress(const int progress)
     if(progress == 100)
     {
         extract_btn->setEnabled(true);
-        add_dialog("Result", "Finished");
+        const auto result_dialog = std::make_shared<ModalDialog>("Result","Extaction is completed.");
+        add(result_dialog);
     }
 }
 
+// This is deprecated
 void MainWindow::add_dialog (const std::string_view title, const std::string_view text)
 {
     const auto message_dialog = tgui::MessageBox::create(std::string(title),std::string(text),{"OK"});

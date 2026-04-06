@@ -49,5 +49,7 @@ public tgui::Gui
     void on_open_out_folder_clicked();
     void on_extract_button_clicked();
     void on_extraction_progress(const int progress);
+    
+    [[deprecated("Use ModalDialog instead.")]]
     void add_dialog (const std::string_view title, const std::string_view text);
 };

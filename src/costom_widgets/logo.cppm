@@ -13,7 +13,7 @@ public tgui::Group
     public:
 
     rostam_logo():
-    m_pic(tgui::Picture::create(texture_from_memory())),
+    m_pic(tgui::Picture::create(rostam_logo::texture_from_memory())),
     m_max_size(std::numeric_limits<decltype(m_max_size)>::max())
     {
         const auto initial_height = m_pic->getSize().y;
