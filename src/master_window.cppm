@@ -44,8 +44,6 @@ public tgui::Gui
     std::future<void> m_extraction_progress_thrd;
     void on_input_btn_clicked();
     void on_output_btn_clicked();
-    void onInputDialResponded(const int response);
-    void onOutputDialResponded(const int response);
     void on_open_out_folder_clicked();
     void on_extract_button_clicked();
     void on_extraction_progress(const int progress);
