@@ -10,3 +10,4 @@ build/
 *.tar.gz
 *.AppImage
 *.zsync
+*.bak

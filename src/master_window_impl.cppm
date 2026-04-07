@@ -7,6 +7,7 @@ module;
 #include "portable_file_dialogs.h"
 #include <TGUI/TGUI.hpp>
 #include <TGUI/Backend/GLFW-OpenGL3.hpp>
+#include <array>
 
 module master_window:impl;
 import master_window;
@@ -14,11 +15,13 @@ import better_checkbox;
 import rostam_logo;
 import rostam;
 import modal_dialog;
+import about_dialog;
 
 MainWindow::MainWindow(GLFWwindow* window):
 tgui::Gui(window),
 main_controls(tgui::GrowVerticalLayout::create()),
 rostam_logo_pic(std::make_shared<rostam_logo>()),
+options_button(tgui::Button::create("⁝")),
 inoutstuffgrid(tgui::Grid::create()),
 inputlbl(tgui::Label::create("Input TS file")),
 outputlbl(tgui::Label::create("Output Folder")),
@@ -38,6 +41,11 @@ m_rostam(std::bind_front(&MainWindow::on_extraction_progress,this))
     master_box->setPosition({"50%","50%"});
     master_box->add(rostam_logo_pic);
     master_box->add(main_controls);
+    master_box->add(options_button);
+    
+    options_button->setTextSize(20);
+    options_button->onClick(&MainWindow::on_options_button_clicked,this);
+    
     rostam_logo_pic->setAutoLayout(tgui::AutoLayout::Fill);
     main_controls->setAutoLayout(tgui::AutoLayout::Bottom);
     main_controls->getRenderer()->setSpaceBetweenWidgets(10);
@@ -138,6 +146,32 @@ void MainWindow::add_dialog (const std::string_view title, const std::string_vie
     message_dialog->onButtonPress(&tgui::MessageBox::close,message_dialog);
     add(message_dialog);
 }
+
+void MainWindow::on_options_button_clicked ()
+{
+    constexpr auto options = std::to_array({"✔ Official Website","♜ Github repo"," ℹ️  About this app"});
+    const auto options_context_menu = tgui::ContextMenu::create();
+    std::ranges::for_each (options,std::bind_front(static_cast<void(tgui::ContextMenu::*)(const tgui::String&)>(&tgui::ContextMenu::addMenuItem),options_context_menu));
+    options_context_menu->setPosition(tgui::bindRight(options_button),tgui::bindBottom(options_button));
+    add(options_context_menu);
+    options_context_menu->connectMenuItem(options[0],&std::system,"xdg-open https://rostam.media");
+    options_context_menu->connectMenuItem(options[1],&std::system,"xdg-open https://github.com/ma5t3rful/rostam-media");
+    options_context_menu->connectMenuItem(options[2],&MainWindow::on_about_clicked,this);
+    options_context_menu->openMenu();
+}
+
+void MainWindow::on_about_clicked ()
+{
+    const auto about_dialog = std::make_shared<AboutDialog>();
+    add(about_dialog);
+}
+
+void MainWindow::on_quit_clicked()
+{
+    // TODO: Implement this.
+}
+
+
 
 MainWindow::~MainWindow()
 {

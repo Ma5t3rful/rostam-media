@@ -22,7 +22,7 @@ public tgui::Gui
 
     tgui::GrowVerticalLayout::Ptr main_controls;
     std::shared_ptr<rostam_logo> rostam_logo_pic;
-
+    tgui::Button::Ptr options_button;
     tgui::Grid::Ptr inoutstuffgrid;
     tgui::Label::Ptr inputlbl;
     tgui::Label::Ptr outputlbl;
@@ -47,7 +47,9 @@ public tgui::Gui
     void on_open_out_folder_clicked();
     void on_extract_button_clicked();
     void on_extraction_progress(const int progress);
-    
+    void on_options_button_clicked ();
+    void on_about_clicked ();
+    void on_quit_clicked (); //quit in context menu
     [[deprecated("Use ModalDialog instead.")]]
     void add_dialog (const std::string_view title, const std::string_view text);
 };
