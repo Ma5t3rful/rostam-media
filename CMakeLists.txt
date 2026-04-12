@@ -14,7 +14,7 @@ FetchContent_Declare( #TODO: Switch from nightly to stable
 )
 FetchContent_MakeAvailable(TGUI)
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/resource/dark.txt  ${CMAKE_CURRENT_BINARY_DIR} COPYONLY)
-
+configure_file(src/version.cppm.in ${CMAKE_CURRENT_BINARY_DIR}/version.cppm)
 #setup portable file dialogs (single-header)
 include_directories(deps/portable_file_dialogs)
 
@@ -27,6 +27,7 @@ target_sources(${PROJECT_NAME} PRIVATE src/main.cpp)
 target_sources(${PROJECT_NAME} PRIVATE FILE_SET rostam_modules TYPE CXX_MODULES FILES ${src_files})
 target_sources(${PROJECT_NAME} PRIVATE FILE_SET rostam_core_module TYPE CXX_MODULES FILES src/core/rostam.cpp)
 target_sources(${PROJECT_NAME} PRIVATE FILE_SET costom_widgets TYPE CXX_MODULES FILES ${costom_widgets})
+target_sources(${PROJECT_NAME} PRIVATE FILE_SET version_module TYPE CXX_MODULES FILES ${CMAKE_CURRENT_BINARY_DIR}/version.cppm)
 target_compile_options(${PROJECT_NAME} PRIVATE -Wall -fhardened -fmodules)
 target_link_libraries(${PROJECT_NAME} TGUI::TGUI)
 target_link_options(${PROJECT_NAME} PUBLIC -static-libstdc++)

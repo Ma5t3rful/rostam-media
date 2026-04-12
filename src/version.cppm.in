@@ -1,0 +1,16 @@
+module;
+#define ROSTAM_VERSION_MA @rostam-media_VERSION_MAJOR@
+#define ROSTAM_VERSION_MI @rostam-media_VERSION_MINOR@
+#define ROSTAM_VERSION_PA @rostam-media_VERSION_PATCH@
+#include <string>
+#include <format>
+export module rostam_version;
+
+export namespace rostam_version {
+    
+    [[nodiscard]]
+    auto get () -> std::string
+    {
+        return std::format("{}.{}.{}",ROSTAM_VERSION_MA,ROSTAM_VERSION_MI,ROSTAM_VERSION_PA);
+    }
+}
