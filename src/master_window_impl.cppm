@@ -16,6 +16,7 @@ import rostam_logo;
 import rostam;
 import modal_dialog;
 import about_dialog;
+import cross_platform;
 
 MainWindow::MainWindow(GLFWwindow* window):
 tgui::Gui(window),
@@ -120,9 +121,10 @@ void MainWindow::on_extract_button_clicked()
 void MainWindow::on_open_out_folder_clicked()
 {
     if (m_outputaddr.empty())return;
-    const auto command = std::format("xdg-open '{}'",m_outputaddr.string());
-    const std::string command_old = "xdg-open \'" + std::string(m_outputaddr) + '\'';
-    const auto _ = std::system(command.c_str());
+    cross_platform::open_link(m_outputaddr.string());
+    //const auto command = std::format("xdg-open '{}'",m_outputaddr.string());
+    //const std::string command_old = "xdg-open \'" + std::string(m_outputaddr) + '\'';
+    //const auto _ = std::system(command.c_str());
 }
 
 
@@ -149,14 +151,16 @@ void MainWindow::add_dialog (const std::string_view title, const std::string_vie
 
 void MainWindow::on_options_button_clicked ()
 {
-    constexpr auto options = std::to_array({"✔ Official Website","♜ Github repo"," ℹ️  About this app"});
+    constexpr auto options = std::to_array({"✔ Official Website ↗","♜ Github repo ↗"," ℹ️  About this app"});
     const auto options_context_menu = tgui::ContextMenu::create();
-    std::ranges::for_each (options,std::bind_front(static_cast<void(tgui::ContextMenu::*)(const tgui::String&)>(&tgui::ContextMenu::addMenuItem),options_context_menu));
+    std::ranges::for_each (options,std::bind_front(static_cast<void(tgui::ContextMenu::*)(const tgui::String&)>(
+        &tgui::ContextMenu::addMenuItem),options_context_menu)
+    );
     options_context_menu->setPosition(tgui::bindRight(options_button),tgui::bindBottom(options_button));
-    add(options_context_menu);
-    options_context_menu->connectMenuItem(options[0],&std::system,"xdg-open https://rostam.media");
-    options_context_menu->connectMenuItem(options[1],&std::system,"xdg-open https://github.com/ma5t3rful/rostam-media");
+    options_context_menu->connectMenuItem(options[0],&cross_platform::open_link,"https://rostam.media");
+    options_context_menu->connectMenuItem(options[1],&cross_platform::open_link,"https://github.com/ma5t3rful/rostam-media");
     options_context_menu->connectMenuItem(options[2],&MainWindow::on_about_clicked,this);
+    add(options_context_menu);
     options_context_menu->openMenu();
 }
 

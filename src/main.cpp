@@ -5,6 +5,7 @@
 #include <algorithm>
 #include <print>
 import master_window;
+import cross_platform;
 
 auto main (int argc, char** argv) -> int
 {
@@ -18,7 +19,7 @@ auto main (int argc, char** argv) -> int
     glfwMakeContextCurrent(window);
     //if(const auto theme = std::getenv("ROSTAM_THEME");theme != nullptr)
     
-    const auto possible_theme_paths = std::to_array({(std::filesystem::canonical("/proc/self/exe").remove_filename()/"dark.txt"),std::filesystem::path("/usr/share/rostam_theme/dark.txt")});
+    const auto possible_theme_paths = std::to_array({cross_platform::exe_path()/"dark.txt",std::filesystem::path("/usr/share/rostam_theme/dark.txt")});
     if(const auto found = std::ranges::find_if(possible_theme_paths,[](const auto& p){return std::filesystem::exists(p);});
     found != possible_theme_paths.cend())
         tgui::Theme::setDefault(found->c_str());
