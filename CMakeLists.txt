@@ -1,6 +1,6 @@
 #CMake and c++ version
 cmake_minimum_required(VERSION 3.31)
-project(rostam-media VERSION 0.2.0)
+project(rostam-media VERSION 0.3.0)
 set(CMAKE_CXX_STANDARD 26)
 
 # setup tgui
