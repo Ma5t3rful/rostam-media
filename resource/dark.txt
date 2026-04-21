@@ -200,6 +200,10 @@ ToggleButton
     RoundedBorderRadius = 3;
 }
 
+ProgressBar{
+    FillColor = #776456;
+}
+
 ChildWindow
 {
     ShowTextOnTitleButtons = true;
