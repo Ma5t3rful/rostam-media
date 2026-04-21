@@ -43,8 +43,7 @@ m_rostam(std::bind_front(&MainWindow::on_extraction_progress,this))
     master_box->add(rostam_logo_pic);
     master_box->add(main_controls);
     master_box->add(options_button);
-    
-    options_button->setTextSize(20);
+    options_button->setTextSize(22);
     options_button->onClick(&MainWindow::on_options_button_clicked,this);
     
     rostam_logo_pic->setAutoLayout(tgui::AutoLayout::Fill);
