@@ -33,7 +33,7 @@ namespace cross_platform
         #elif _WIN32 
         wchar_t path_buffer [MAX_PATH * 2];
         GetModuleFileNameW(nullptr, path_buffer, MAX_PATH * 2);
-        return std::filesystem::path(path_buffer);
+        return std::filesystem::path(path_buffer).remove_filename();
         #endif
     }
 }
