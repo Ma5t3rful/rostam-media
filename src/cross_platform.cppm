@@ -1,13 +1,13 @@
 // This module has the facillity
 module;
-#ifdef _WIN32
-#include <windows.h>
-#endif
 #include <format>
 #include <string>
 #include <string_view>
 #include <stdexcept>
 #include <filesystem>
+#ifdef _WIN32
+#include <windows.h>
+#endif
 export module cross_platform;
 
 export 
