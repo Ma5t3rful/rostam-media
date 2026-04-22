@@ -1,4 +1,4 @@
-#CMake and c++ version
+#CMake and C++ version
 cmake_minimum_required(VERSION 3.31)
 project(rostam-media VERSION 0.3.0)
 set(CMAKE_CXX_STANDARD 26)
@@ -22,6 +22,10 @@ include_directories(deps/portable_file_dialogs)
 message("🐦‍🔥 Setting up Rostam.")
 file(GLOB src_files src/*.cppm)
 file(GLOB costom_widgets src/costom_widgets/*.cppm)
+
+if(WIN32)
+add_definitions(-D_WIN32_WINNT=0x0601) # Windows 7 compatibility
+endif()
 add_executable(${PROJECT_NAME})
 target_sources(${PROJECT_NAME} PRIVATE src/main.cpp)
 target_sources(${PROJECT_NAME} PRIVATE FILE_SET rostam_modules TYPE CXX_MODULES FILES ${src_files})
