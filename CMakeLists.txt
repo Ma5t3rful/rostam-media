@@ -43,10 +43,14 @@ target_link_options(${PROJECT_NAME} PUBLIC -static-libstdc++)
 ###### INSTALLATION PROCESS ######
 include (GNUInstallDirs)
 install(TARGETS ${PROJECT_NAME} DESTINATION ${CMAKE_INSTALL_BINDIR})
-# TODO loop for installing icons
+install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/resource/dark.txt DESTINATION ${CMAKE_INSTALL_BINDIR})
+# TODO: loop for installing icons
+if(UNIX)
 install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/resource/icons/256x256/apps/rostam-media.png DESTINATION ${CMAKE_INSTALL_DATADIR}/icons/hicolor/256x256/apps/)
 install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/resource/desktop/rostam-media.desktop DESTINATION ${CMAKE_INSTALL_DATADIR}/applications/)
-install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/resource/dark.txt DESTINATION ${CMAKE_INSTALL_BINDIR})
-
+endif()
 ###### PACKAGING ######
+set(CPACK_PACKAGE_EXECUTABLES rostam-media;RostamMedia)
+set(CPACK_PACKAGE_VENDOR "-")
+set(CPACK_NSIS_IGNORE_LICENSE_PAGE TRUE)
 include (CPack)
