@@ -1,8 +1,7 @@
 #include <GLFW/glfw3.h>
 #include <TGUI/TGUI.hpp>
-#include <array>
 #include <filesystem>
-#include <algorithm>
+#include <optional>
 #include <print>
 import master_window;
 import cross_platform;
@@ -18,17 +17,10 @@ auto main (int argc, char** argv) -> int
     auto* window = glfwCreateWindow(1000, 500, "Rostam Media", nullptr, nullptr);
     glfwSetWindowSizeLimits(window, 280, 250, GLFW_DONT_CARE, GLFW_DONT_CARE);
     glfwMakeContextCurrent(window);
-    //if(const auto theme = std::getenv("ROSTAM_THEME");theme != nullptr)
-
-    const auto possible_theme_paths = std::to_array({cross_platform::exe_path()/"dark.txt",std::filesystem::path("/usr/share/rostam_theme/dark.txt")});
-    if(const auto found = std::ranges::find_if(possible_theme_paths,[](const auto& p){return std::filesystem::exists(p);});
-    found != possible_theme_paths.cend())
-        tgui::Theme::setDefault(found->c_str());
-    else if(const auto appdir = std::getenv("APPDIR");appdir)
-    {
-        tgui::Theme::setDefault((appdir/std::filesystem::path("share/rostam_theme/dark.txt")).c_str());
-    }
     
+    if(const auto dark_theme = cross_platform::find_file("dark.txt");dark_theme)tgui::Theme::setDefault(dark_theme->c_str());
+    else std::println("Falied to find the theme file. looks might be off!");
+
     {// scope for gui to be destroyed before calling terminate
         MainWindow gui(window);
         gui.mainLoop("#211f1f");
