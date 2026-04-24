@@ -8,9 +8,9 @@ jobs:
   build:
     runs-on: windows-2022
 
-  env:
-    BUILD_TYPE: Release
-    INSTALL_PREFIX: ${{ github.workspace }}/deps/install
+    env:
+      BUILD_TYPE: Release
+      INSTALL_PREFIX: ${{ github.workspace }}/deps/install
 
     steps:
       - name: Checkout
@@ -20,10 +20,10 @@ jobs:
       # --------------------------------------------------
       - name: Install Ninja
         run: choco install ninja --no-progress
-
+        
       - name: Verify Ninja
         run: ninja --version
-    
+      
       # --------------------------------------------------
       # Install MinGW (niXman GCC 15.2)
       # --------------------------------------------------
