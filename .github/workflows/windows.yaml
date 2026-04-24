@@ -9,8 +9,8 @@ jobs:
     runs-on: windows-2022
 
     env:
-      CMAKE_C_COMPILER=gcc
-      CMAKE_CXX_COMPILER=g++
+      CMAKE_C_COMPILER: gcc
+      CMAKE_CXX_COMPILER: g++
       BUILD_TYPE: Release
       INSTALL_PREFIX: ${{ github.workspace }}/deps/install
 
