@@ -2,7 +2,7 @@ name: Build for Windows (cmake -> ninja -> mingw-w64-g++-15.2 -> cpack)
 
 on:
   push:
-    branches: [ main ]
+    branches: [ master ]
 
 jobs:
   build:
