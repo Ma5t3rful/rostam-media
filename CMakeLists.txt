@@ -26,7 +26,7 @@ file(GLOB costom_widgets src/costom_widgets/*.cppm)
 if(WIN32)
 add_definitions(-D_WIN32_WINNT=0x0601) # Windows 7 compatibility
 endif()
-add_executable(${PROJECT_NAME})
+add_executable(${PROJECT_NAME} WIN32)
 target_sources(${PROJECT_NAME} PRIVATE src/main.cpp)
 target_sources(${PROJECT_NAME} PRIVATE FILE_SET rostam_modules TYPE CXX_MODULES FILES ${src_files})
 target_sources(${PROJECT_NAME} PRIVATE FILE_SET rostam_core_module TYPE CXX_MODULES FILES src/core/rostam.cpp)
