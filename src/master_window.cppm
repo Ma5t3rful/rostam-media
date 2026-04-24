@@ -50,6 +50,7 @@ public tgui::Gui
     void on_options_button_clicked ();
     void on_about_clicked ();
     void on_quit_clicked (); //quit in context menu
+    
     [[deprecated("Use ModalDialog instead.")]]
     void add_dialog (const std::string_view title, const std::string_view text);
 };

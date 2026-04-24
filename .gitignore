@@ -1,5 +1,6 @@
 .cache
 .cmake
+.ninja*
 _*_/
 0000
 AppImage/arch*
@@ -7,7 +8,9 @@ build/
 *.so
 *.a
 *.c
+*.zip
 *.tar.gz
 *.AppImage
 *.zsync
 *.bak
+CPack*
