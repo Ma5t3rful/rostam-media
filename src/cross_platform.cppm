@@ -38,7 +38,7 @@ namespace cross_platform
         // wchar_t path_buffer [MAX_PATH * 2];
         // GetModuleFileNameW(nullptr, path_buffer, MAX_PATH * 2);
         // return std::filesystem::path(path_buffer).remove_filename();
-        return "stub"
+        return "stub";
         #endif
     }
     
