@@ -1,6 +1,6 @@
 // This module has the facillity
 module;
-#ifdef __unix
+#if __unix
 #include <format>
 #endif
 #include <string>
@@ -19,7 +19,7 @@ namespace cross_platform
 {
     auto open_link (const std::string_view link) -> void
     {
-        #ifdef __unix__
+        #if __unix__
         const auto xdg_open = std::format("xdg-open \"{}\"",link);
         const auto result   = std::system (xdg_open.c_str());
         if(result != 0) throw std::runtime_error(std::format("xdg-open returned non-zero: {}",result));
@@ -32,7 +32,7 @@ namespace cross_platform
     auto exe_path () -> std::filesystem::path
     {
         // This is one of the things that the standard library should add.
-        #ifdef __unix__ // DONE
+        #if __unix__ // DONE
         return std::filesystem::canonical("/proc/self/exe").remove_filename();
         #elif _WIN32 
         wchar_t path_buffer [MAX_PATH * 2];
