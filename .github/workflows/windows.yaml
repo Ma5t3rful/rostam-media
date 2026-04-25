@@ -49,8 +49,8 @@ jobs:
           git clone https://github.com/glfw/glfw.git
           cmake -S glfw -B glfw/build `
             -G Ninja `
-            -DCMAKE_BUILD_TYPE=$env:BUILD_TYPE `
-            -DCMAKE_INSTALL_PREFIX=$env:INSTALL_PREFIX `
+            -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }} `
+            -DCMAKE_INSTALL_PREFIX=${{ env.INSTALL_PREFIX }} `
             -DGLFW_BUILD_DOCS=OFF `
             -DGLFW_BUILD_TESTS=OFF `
             -DGLFW_BUILD_EXAMPLES=OFF
@@ -65,8 +65,8 @@ jobs:
           git clone https://github.com/freetype/freetype.git
           cmake -S freetype -B freetype/build `
             -G Ninja `
-            -DCMAKE_BUILD_TYPE=$env:BUILD_TYPE `
-            -DCMAKE_INSTALL_PREFIX=$env:INSTALL_PREFIX `
+            -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }} `
+            -DCMAKE_INSTALL_PREFIX=${{ env.INSTALL_PREFIX }} `
             -DBUILD_SHARED_LIBS=OFF
           cmake --build freetype/build
           cmake --install freetype/build
@@ -78,8 +78,8 @@ jobs:
         run: |
           cmake -S . -B build `
             -G Ninja `
-            -DCMAKE_BUILD_TYPE=$env:BUILD_TYPE `
-            -DCMAKE_PREFIX_PATH=$env:INSTALL_PREFIX 
+            -DCMAKE_BUILD_TYPE= ${{ env.BUILD_TYPE }} `
+            -DCMAKE_PREFIX_PATH=${{ env.INSTALL_PREFIX }} 
 
       - name: Build project
         run: cmake --build build --config Release
