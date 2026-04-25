@@ -1,6 +1,8 @@
 // This module has the facillity
 module;
+#ifdef __unix
 #include <format>
+#endif
 #include <string>
 #include <algorithm>
 #include <string_view>
@@ -19,7 +21,7 @@ namespace cross_platform
     {
         #ifdef __unix__
         const auto xdg_open = std::format("xdg-open \"{}\"",link);
-        const auto result =  std::system (xdg_open.c_str());
+        const auto result   = std::system (xdg_open.c_str());
         if(result != 0) throw std::runtime_error(std::format("xdg-open returned non-zero: {}",result));
         #elif _WIN32 //FIXME: Does not work with utf-8 strings.
         const auto start_command = std::format("start \"\" \"{}\"",link);
