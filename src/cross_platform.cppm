@@ -10,7 +10,7 @@ module;
 #include <filesystem>
 #include <optional>
 #ifdef _WIN32
-#include <windows.h>
+// #include <windows.h>
 #endif
 export module cross_platform;
 
@@ -35,9 +35,10 @@ namespace cross_platform
         #if __unix__ // DONE
         return std::filesystem::canonical("/proc/self/exe").remove_filename();
         #elif _WIN32 
-        wchar_t path_buffer [MAX_PATH * 2];
-        GetModuleFileNameW(nullptr, path_buffer, MAX_PATH * 2);
-        return std::filesystem::path(path_buffer).remove_filename();
+        // wchar_t path_buffer [MAX_PATH * 2];
+        // GetModuleFileNameW(nullptr, path_buffer, MAX_PATH * 2);
+        // return std::filesystem::path(path_buffer).remove_filename();
+        return "stub"
         #endif
     }
     
