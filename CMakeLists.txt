@@ -1,6 +1,6 @@
 #CMake and C++ version
 cmake_minimum_required(VERSION 3.31)
-project(rostam-media VERSION 0.3.0)
+project(rostam-media VERSION 1.0.0)
 set(CMAKE_CXX_STANDARD 26)
 
 # setup tgui
@@ -32,7 +32,11 @@ target_sources(${PROJECT_NAME} PRIVATE FILE_SET rostam_modules TYPE CXX_MODULES 
 target_sources(${PROJECT_NAME} PRIVATE FILE_SET rostam_core_module TYPE CXX_MODULES FILES src/core/rostam.cpp)
 target_sources(${PROJECT_NAME} PRIVATE FILE_SET costom_widgets TYPE CXX_MODULES FILES ${costom_widgets})
 target_sources(${PROJECT_NAME} PRIVATE FILE_SET version_module TYPE CXX_MODULES FILES ${CMAKE_CURRENT_BINARY_DIR}/version.cppm)
+if(WIN32)
+target_compile_options(${PROJECT_NAME} PRIVATE -Wall -fmodules)
+else()
 target_compile_options(${PROJECT_NAME} PRIVATE -Wall -fhardened -fmodules)
+endif()
 target_link_libraries(${PROJECT_NAME} PRIVATE TGUI::TGUI)
 if(WIN32)
 # set icon for windows executable + -lstdc++exp flag is needed on windows for std::println()
