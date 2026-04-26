@@ -32,17 +32,17 @@ target_sources(${PROJECT_NAME} PRIVATE FILE_SET rostam_modules TYPE CXX_MODULES 
 target_sources(${PROJECT_NAME} PRIVATE FILE_SET rostam_core_module TYPE CXX_MODULES FILES src/core/rostam.cpp)
 target_sources(${PROJECT_NAME} PRIVATE FILE_SET costom_widgets TYPE CXX_MODULES FILES ${costom_widgets})
 target_sources(${PROJECT_NAME} PRIVATE FILE_SET version_module TYPE CXX_MODULES FILES ${CMAKE_CURRENT_BINARY_DIR}/version.cppm)
-if(WIN32)
-target_compile_options(${PROJECT_NAME} PRIVATE -Wall -fmodules)
-target_link_options(rostam-media PRIVATE -Wl,--allow-multiple-definition)
-else()
 target_compile_options(${PROJECT_NAME} PRIVATE -Wall -fhardened -fmodules)
+
+# TODO: Maybe update the compiler and remove the workarounds
+if(WIN32) # compiler workarounds for windows
+target_compile_options(${PROJECT_NAME} PRIVATE -Wall -fmodules)
+target_link_options(rostam-media PRIVATE -Wl,--allow-multiple-definition) # workaround for weired std::format redefinition errors on windows
+target_link_libraries(${PROJECT_NAME} PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/resource/rostam_windows_icon.o") # icon for windows 
+target_link_libraries(${PROJECT_NAME} PRIVATE -lstdc++exp "${CMAKE_CURRENT_SOURCE_DIR}/resource/rostam_windows_icon.o") # workaround for undefined reference for std::write_to_terminal...
 endif()
+
 target_link_libraries(${PROJECT_NAME} PRIVATE TGUI::TGUI)
-if(WIN32)
-# set icon for windows executable + -lstdc++exp flag is needed on windows for std::println()
-target_link_libraries(${PROJECT_NAME} PRIVATE -lstdc++exp "${CMAKE_CURRENT_SOURCE_DIR}/resource/rostam_windows_icon.o")
-endif()
 # target_link_options(${PROJECT_NAME} PUBLIC -static-libstdc++)
 
 ###### INSTALLATION PROCESS ######
