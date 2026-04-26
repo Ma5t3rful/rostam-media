@@ -34,6 +34,7 @@ target_sources(${PROJECT_NAME} PRIVATE FILE_SET costom_widgets TYPE CXX_MODULES 
 target_sources(${PROJECT_NAME} PRIVATE FILE_SET version_module TYPE CXX_MODULES FILES ${CMAKE_CURRENT_BINARY_DIR}/version.cppm)
 if(WIN32)
 target_compile_options(${PROJECT_NAME} PRIVATE -Wall -fmodules)
+target_link_options(rostam-media PRIVATE -Wl,--allow-multiple-definition)
 else()
 target_compile_options(${PROJECT_NAME} PRIVATE -Wall -fhardened -fmodules)
 endif()
