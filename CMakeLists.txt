@@ -42,7 +42,7 @@ if(WIN32)
 # set icon for windows executable + -lstdc++exp flag is needed on windows for std::println()
 target_link_libraries(${PROJECT_NAME} PRIVATE -lstdc++exp "${CMAKE_CURRENT_SOURCE_DIR}/resource/rostam_windows_icon.o")
 endif()
-target_link_options(${PROJECT_NAME} PUBLIC -static-libstdc++)
+# target_link_options(${PROJECT_NAME} PUBLIC -static-libstdc++)
 
 ###### INSTALLATION PROCESS ######
 include (GNUInstallDirs)
