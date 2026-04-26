@@ -23,9 +23,13 @@ namespace cross_platform
         const auto xdg_open = std::format("xdg-open \"{}\"",link);
         const auto result   = std::system (xdg_open.c_str());
         if(result != 0) throw std::runtime_error(std::format("xdg-open returned non-zero: {}",result));
-        #elif _WIN32 //FIXME: Does not work with utf-8 strings.
-        const auto start_command = std::format("start \"\" \"{}\"",link);
-        const auto _ = std::system(start_command.c_str());
+        #elif _WIN32 
+        // Becuse we're using std::string_view, the safe approch is to copy to std::string first to guarantee null-termination.
+        // TODO: Needs testing
+        const auto link_str = std::string(link);
+        const auto _ = ShellExecute(nullptr, "open", link_str.c_str(), nullptr, nullptr, SW_HIDE);
+        // const auto start_command = std::format("start \"\" \"{}\"",link);
+        // const auto _ = std::system(start_command.c_str());
         #endif
     }
 
