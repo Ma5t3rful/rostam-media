@@ -43,7 +43,7 @@ target_link_libraries(${PROJECT_NAME} PRIVATE -lstdc++exp "${CMAKE_CURRENT_SOURC
 endif()
 
 target_link_libraries(${PROJECT_NAME} PRIVATE TGUI::TGUI)
-# target_link_options(${PROJECT_NAME} PUBLIC -static-libstdc++)
+target_link_options(${PROJECT_NAME} PUBLIC -static-libstdc++)
 
 ###### INSTALLATION PROCESS ######
 include (GNUInstallDirs)
