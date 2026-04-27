@@ -36,10 +36,9 @@ target_compile_options(${PROJECT_NAME} PRIVATE -Wall -fhardened -fmodules)
 
 # TODO: Maybe update the compiler and remove the workarounds
 if(WIN32) # compiler workarounds for windows
-target_compile_options(${PROJECT_NAME} PRIVATE -Wall -fmodules)
 target_link_options(rostam-media PRIVATE -Wl,--allow-multiple-definition) # workaround for weired std::format redefinition errors on windows
 target_link_libraries(${PROJECT_NAME} PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/resource/rostam_windows_icon.o") # icon for windows 
-target_link_libraries(${PROJECT_NAME} PRIVATE -lstdc++exp "${CMAKE_CURRENT_SOURCE_DIR}/resource/rostam_windows_icon.o") # workaround for undefined reference for std::write_to_terminal...
+target_link_libraries(${PROJECT_NAME} PRIVATE -lstdc++exp) # workaround for undefined reference for std::write_to_terminal...
 endif()
 
 target_link_libraries(${PROJECT_NAME} PRIVATE TGUI::TGUI)
@@ -53,6 +52,8 @@ install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/resource/dark.txt DESTINATION ${CMAKE_
 if(UNIX)
 install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/resource/icons/256x256/apps/rostam-media.png DESTINATION ${CMAKE_INSTALL_DATADIR}/icons/hicolor/256x256/apps/)
 install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/resource/desktop/rostam-media.desktop DESTINATION ${CMAKE_INSTALL_DATADIR}/applications/)
+elseif(WIN32)
+install (TARGETS ${PROJECT_NAME} RUNTIME_DEPENDENCIES DESTINATION ${CMAKE_INSTALL_BINDIR})
 endif()
 ###### PACKAGING ######
 set(CPACK_PACKAGE_EXECUTABLES rostam-media;RostamMedia)
