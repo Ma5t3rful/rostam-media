@@ -17,6 +17,20 @@ export module cross_platform;
 export 
 namespace cross_platform
 {
+    enum class os {
+        UNIX=0,
+        WINDOWS
+    };
+    
+    constexpr auto platform() -> cross_platform::os
+    {
+        #if _WIN32
+        return os::WINDOWS;
+        #else
+        return os::UNIX;
+        #endif
+    }
+
     auto open_link (const std::string_view link) -> void
     {
         #if __unix__
