@@ -54,7 +54,7 @@ install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/resource/icons/256x256/apps/rostam-med
 install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/resource/desktop/rostam-media.desktop DESTINATION ${CMAKE_INSTALL_DATADIR}/applications/)
 elseif(WIN32)
 get_filename_component(COMPILER_DIR "${CMAKE_CXX_COMPILER}" PATH)
-install (TARGETS ${PROJECT_NAME} RUNTIME_DEPENDENCIES  PRE_EXCLUDE_REGEXES "api-ms-" "ext-ms-" DIRECTORIES ${COMPILER_DIR} DESTINATION ${CMAKE_INSTALL_BINDIR})
+install (TARGETS ${PROJECT_NAME} RUNTIME_DEPENDENCIES  PRE_EXCLUDE_REGEXES "api-ms-" "ext-ms-" "HvsiFileTrust.dll" "wpaxholder.dll" DIRECTORIES ${COMPILER_DIR} DESTINATION ${CMAKE_INSTALL_BINDIR})
 endif()
 ###### PACKAGING ######
 set(CPACK_PACKAGE_EXECUTABLES rostam-media;RostamMedia)
