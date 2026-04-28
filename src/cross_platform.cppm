@@ -41,7 +41,7 @@ namespace cross_platform
         // Becuse we're using std::string_view, the safe approch is to copy to std::string first to guarantee null-termination.
         // TODO: Needs testing
         const auto link_str = std::string(link);
-        const auto _ = ShellExecute(nullptr, "open", link_str.c_str(), nullptr, nullptr, SW_HIDE);
+        const auto _ = ShellExecute(nullptr, "start", link_str.c_str(), nullptr, nullptr, SW_HIDE);
         // const auto start_command = std::format("start \"\" \"{}\"",link);
         // const auto _ = std::system(start_command.c_str());
         #endif
