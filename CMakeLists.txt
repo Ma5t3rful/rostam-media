@@ -53,7 +53,7 @@ if(UNIX)
 install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/resource/icons/256x256/apps/rostam-media.png DESTINATION ${CMAKE_INSTALL_DATADIR}/icons/hicolor/256x256/apps/)
 install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/resource/desktop/rostam-media.desktop DESTINATION ${CMAKE_INSTALL_DATADIR}/applications/)
 elseif(WIN32)
-install (TARGETS ${PROJECT_NAME} RUNTIME_DEPENDENCIES DESTINATION ${CMAKE_INSTALL_BINDIR})
+install (TARGETS ${PROJECT_NAME} RUNTIME_DEPENDENCIES  PRE_EXCLUDE_REGEXES "api-ms-" "ext-ms-" DESTINATION ${CMAKE_INSTALL_BINDIR})
 endif()
 ###### PACKAGING ######
 set(CPACK_PACKAGE_EXECUTABLES rostam-media;RostamMedia)
