@@ -78,7 +78,7 @@ jobs:
         run: |
           cmake -S . -B build `
             -G Ninja `
-            -DCMAKE_BUILD_TYPE= ${{ env.BUILD_TYPE }} `
+            -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }} `
             -DCMAKE_PREFIX_PATH=${{ env.INSTALL_PREFIX }} 
 
       - name: Build project
