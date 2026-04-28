@@ -57,8 +57,8 @@ get_filename_component(COMPILER_DIR "${CMAKE_CXX_COMPILER}" PATH)
 install (
     TARGETS ${PROJECT_NAME} 
     RUNTIME_DEPENDENCIES  
-    PRE_EXCLUDE_REGEXES "api-ms-" "ext-ms-" "HvsiFileTrust" "wpaxholder.dll" 
-    POST_EXCLUDE_REGEXES "HvsiFileTrust"
+    PRE_EXCLUDE_REGEXES "api-ms-" "ext-ms-" "HvsiFileTrust.*" "hvsifiletrust.dll" "wpaxholder.dll" 
+    POST_EXCLUDE_REGEXES "HvsiFileTrust.*" ".*system32/.*\\.dll"
     DIRECTORIES ${COMPILER_DIR} 
     DESTINATION ${CMAKE_INSTALL_BINDIR}
 )
