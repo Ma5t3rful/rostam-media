@@ -33,17 +33,23 @@ namespace cross_platform
 
     auto open_link (const std::string_view link) -> void
     {
+        // TODO: overload for std::filesystem::path
         #if __unix__
         const auto xdg_open = std::format("xdg-open \"{}\"",link);
         const auto result   = std::system (xdg_open.c_str());
         if(result != 0) throw std::runtime_error(std::format("xdg-open returned non-zero: {}",result));
         #elif _WIN32 
-        // Becuse we're using std::string_view, the safe approch is to copy to std::string first to guarantee null-termination.
-        // TODO: Needs testing
-        const auto link_str = std::string(link);
-        const auto _ = ShellExecute(nullptr, link.starts_with("http")?"open":"explore", link_str.c_str(), nullptr, nullptr, SW_SHOW);
-        // const auto start_command = std::format("start \"\" \"{}\"",link);
-        // const auto _ = std::system(start_command.c_str());
+        // Becuse we're using std::string_view, the safe approch is to copy to std::string or std::filesystem::path first to guarantee null-termination.
+        if(link.starts_with("http") or link.starts_with("www"))
+        {
+            const auto link_str = std::string(link);
+            const auto _ = ShellExecute(nullptr, link.starts_with("http")?"open", link_str.c_str(), nullptr, nullptr, SW_SHOW);
+            return;
+        }
+        
+        const auto link_path = std::filesystem::path(link);
+        const auto _ = ShellExecuteW(nullptr, L"explore", link_path.c_str(), nullptr, nullptr, SW_SHOW);
+        
         #endif
     }
 
