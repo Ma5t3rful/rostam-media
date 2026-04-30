@@ -43,7 +43,7 @@ namespace cross_platform
         if(link.starts_with("http") or link.starts_with("www"))
         {
             const auto link_str = std::string(link);
-            const auto _ = ShellExecute(nullptr, link.starts_with("http")?"open", link_str.c_str(), nullptr, nullptr, SW_SHOW);
+            const auto _ = ShellExecute(nullptr, "open", link_str.c_str(), nullptr, nullptr, SW_SHOW);
             return;
         }
         
