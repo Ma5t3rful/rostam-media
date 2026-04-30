@@ -14,6 +14,7 @@ module;
 #include <vector>
 #include <ranges>
 #include <cctype>
+#include <cstdint>
 export module rostam;
 
 
@@ -105,7 +106,7 @@ export class rostam{
         // std::println("parseEQheader called");
         const auto bytes_to_uint64 = [](const std::span<const int> byte_span, const std::size_t offset){
             const static auto shift_left_full64 = 56;
-            auto value = 0ul;
+            auto value = std::uint64_t();
             for (int i = 0; i < 8; ++i) {
                 value = (value >> 8) | (static_cast<unsigned long>(byte_span[i+offset]) << shift_left_full64);
                 // std::print("{:X} - ",buffer[i + offset]);
