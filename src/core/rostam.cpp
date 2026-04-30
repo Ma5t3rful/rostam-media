@@ -401,8 +401,10 @@ export class rostam{
                 // NOTE: the official EQSat app sanitizes the filenames so files can only use ascii characters as their names. (A-Z a-z 0-9 etc)
                 // the code below can achieve most of the sanitizer algorithm.
                 filename = m_buffer 
-                | std::views::drop_while([](const auto c){return c == '.';}) //removes the first '.' if exists
-                | std::views::filter([](const auto c){return isascii(c) and not std::iscntrl(c);}) // actual sanitizer
+                | std::views::drop_while([](const auto c){return c == '.';}) // removes the first '.' if exists
+                | std::views::filter([](const auto c){return isascii(c) and not std::iscntrl(c);}) // avoid currupted/control chars
+                | std::views::transform ([windows_illigal=std::string_view(":<>|*?\"\\/")](const auto c)->char {
+                    if(windows_illigal.contains(c)) return '-'; else return c;}) // replace illigal chars for windows
                 | std::ranges::to<std::string>();
 
                 std::println("Extracting file: {}", filename);
