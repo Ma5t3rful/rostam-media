@@ -108,7 +108,7 @@ export class rostam{
             const static auto shift_left_full64 = 56;
             auto value = std::uint64_t();
             for (int i = 0; i < 8; ++i) {
-                value = (value >> 8) | (static_cast<unsigned long>(byte_span[i+offset]) << shift_left_full64);
+                value = (value >> 8) | (static_cast<std::uint64_t>(byte_span[i+offset]) << shift_left_full64);
                 // std::print("{:X} - ",buffer[i + offset]);
             }
             // std::println("\n-> so the value is: 0x{0:X} ({0})",value);
