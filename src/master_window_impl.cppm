@@ -121,9 +121,6 @@ void MainWindow::on_open_out_folder_clicked()
 {
     if (m_outputaddr.empty())return;
     cross_platform::open_link(m_outputaddr.string());
-    //const auto command = std::format("xdg-open '{}'",m_outputaddr.string());
-    //const std::string command_old = "xdg-open \'" + std::string(m_outputaddr) + '\'';
-    //const auto _ = std::system(command.c_str());
 }
 
 
@@ -150,7 +147,7 @@ void MainWindow::add_dialog (const std::string_view title, const std::string_vie
 
 void MainWindow::on_options_button_clicked ()
 {
-    constexpr auto options = std::to_array({"✔ Official Website ↗","♜ Github repo ↗"," ℹ️  About this app"});
+    constexpr auto options = std::to_array({"✔ Official Website ↗","♜ Github Repo ↗"," ℹ️  About this app"});
     const auto options_context_menu = tgui::ContextMenu::create();
     std::ranges::for_each (options,std::bind_front(static_cast<void(tgui::ContextMenu::*)(const tgui::String&)>(
         &tgui::ContextMenu::addMenuItem),options_context_menu)

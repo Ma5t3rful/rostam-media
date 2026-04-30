@@ -1,4 +1,4 @@
-// This module has the facillity
+// This module has the facillity 
 module;
 #if __unix
 #include <format>
@@ -30,6 +30,8 @@ namespace cross_platform
         return os::UNIX;
         #endif
     }
+
+    // TODO: open_link overload for path
 
     auto open_link (const std::string_view link) -> void
     {
@@ -65,7 +67,7 @@ namespace cross_platform
         #endif
     }
     
-    //TODO: Needs testing
+    
     auto find_file (const std::string_view filename) -> std::optional<std::filesystem::path>
     {
         if(const auto appdir_env = std::getenv("APPDIR"); appdir_env)
