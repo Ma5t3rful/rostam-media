@@ -17,6 +17,18 @@ module;
 #include <cstdint>
 export module rostam;
 
+// Disgusting workaround for windows. This will fully nuke std::println only on windows because for some reason, std::println throws after some time when console is disabled.
+// It's still a part of stdc++exp on windows and maybe it's still not yet ready.
+#if _WIN32
+#define println _dummy_println_win_
+namespace std {
+    template <class... T>
+    void _dummy_println_win_ (const T&... _)
+    {
+        // Do nothing
+    }
+};
+#endif
 
 export class rostam{
     
