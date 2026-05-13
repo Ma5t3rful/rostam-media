@@ -5,6 +5,9 @@ on:
     workflows: ["Build and Release AppImage"]
     types: [completed]
 
+permissions:
+  contents: write
+
 jobs:
   build:
     if: ${{ github.event.workflow_run.conclusion == 'success' }}
@@ -100,5 +103,6 @@ jobs:
       - name: Upload installer to release
         uses: softprops/action-gh-release@v1
         with:
+          tag_name: ${{ github.event.workflow_run.head_branch }}
           # *win64.exe because we only wan't the installer
           files: build/*win64.exe
