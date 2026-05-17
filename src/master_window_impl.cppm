@@ -135,15 +135,6 @@ void MainWindow::on_extraction_progress(const int progress)
     }
 }
 
-// This is deprecated
-void MainWindow::add_dialog (const std::string_view title, const std::string_view text)
-{
-    const auto message_dialog = tgui::MessageBox::create(std::string(title),std::string(text),{"OK"});
-    message_dialog->setOrigin(.5f,.5f);
-    message_dialog->setPosition("50%","50%");
-    message_dialog->onButtonPress(&tgui::MessageBox::close,message_dialog);
-    add(message_dialog);
-}
 
 void MainWindow::on_options_button_clicked ()
 {
