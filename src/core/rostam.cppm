@@ -53,12 +53,12 @@ export class rostam{
     
     public:
     rostam(const std::function<void (int)> progress_callback = nullptr):
-    m_state(STATE::STATE_SEARCHING_FOR_HEADER),
+    m_state(STATE::SEARCHING_FOR_HEADER),
     currentEQHeaderBytesRead(0),
     previousPacketMagicBytePatternIndex(0),
-    m_debug(true),
     bufferLength(0),
     m_file_data_read(0),
+    m_debug(true),
     m_progress_callback(progress_callback)
     {
         
@@ -95,13 +95,13 @@ export class rostam{
         {
            std::println("Scanning for files to extract...");
         }
-        m_state = rostam::STATE::STATE_SEARCHING_FOR_HEADER;
+        m_state = rostam::STATE::SEARCHING_FOR_HEADER;
         this->eQHeader = {0,0,0,0};
         m_buffer.erase(m_buffer.begin(),m_buffer.end());
         this->bufferLength = 0; // How much has been read into the buffer
         this->filename.erase(0); // Filename of current file being extracted (if any)
         // this.fileData = []; // Data that has been read for current file. Array of Uint8Arrays (I think its never used)
-        this->m_file_data_read = 0uz; // How much file data has been read so far
+        m_file_data_read = 0uz; // How much file data has been read so far
         // this.cancelFlag = false;
             std::filesystem::path m_output_path;
         
@@ -186,7 +186,7 @@ export class rostam{
     } // getPESAndAC3HeaderSize(packet, header)
 
 
-    auto parseTSHeader(const std::span<const int> packet) const -> std::optional<TSHeader> 
+    auto parse_ts_header(const std::span<const int> packet) const -> std::optional<TSHeader> 
     {
         constexpr auto static this_pid = 6530;
         TSHeader header;
@@ -248,7 +248,7 @@ export class rostam{
         }
         // if(m_debug)std::println("header TSC : {}\nheader AFC: {}\nhreader CC: {}\nheader:payload:\n{}",header.TSC,header.AFC,header.CC,header.payload|std::views::transform([](const auto v){return std::format("{:0>2x}",v);}));
         return header;
-    } // parseTSHeader(packet) 
+    } // parse_ts_header(packet) 
 
 
     auto findMagicBytes(const std::span<const int> payload) -> long long 
@@ -352,12 +352,11 @@ export class rostam{
     auto parse_ts_packets(const std::span<const int> packet) -> void
     {
         // constexpr auto packet_size = 188uz;
-        // if(packet.size() < 4) return ;
         if(packet.at(0) != 0x47)std::println("WARNING: Out of sync detected: 0x{:X}", packet.at(0));
         // If the packet is smaller than the MPEG-TS packet header, skip
         if(packet.size() < 4) return;
 
-        const auto ts_header = this->parseTSHeader(packet); // parse MPEG-TS header
+        const auto ts_header = this->parse_ts_header(packet); // parse MPEG-TS header
         //if(tsHeader.has_value())std::println("{}",tsHeader->payload);
         // If parseTSHeader() returns false then the PID didn't match
         // or the header failed to parse so skip the packet
@@ -367,7 +366,7 @@ export class rostam{
         // e.g. by reading the header or filename
         auto curPayloadOffset = 0ll;
 
-        if(m_state == rostam::STATE::STATE_SEARCHING_FOR_HEADER) 
+        if(m_state == rostam::STATE::SEARCHING_FOR_HEADER) 
         {
             curPayloadOffset = this->checkForEQHeader(*ts_header);
             if(curPayloadOffset >= 0) 
@@ -381,22 +380,22 @@ export class rostam{
                 }
                 if(eQHeader.filename_length >= std::numeric_limits<uint8_t>::max()) throw std::logic_error("too many allocations in SEARCHING_FOR_HEADERS cond");
                 // std::println("parse_ts_packates() allocating filename_length: {}",eQHeader.filename_length);
-                this->m_buffer = std::vector<unsigned char>(eQHeader.filename_length); //ME: throws -> FIXED
+                m_buffer = std::vector<unsigned char>(eQHeader.filename_length); //ME: throws -> FIXED
                 bufferLength = 0;
                 
                 //this->bufferLength = 0;
                 // tsHeader.payloadOffset += EQSAT_HEADER_SIZE;
                 // tsHeader.payloadLength -= EQSAT_HEADER_SIZE;
                 std::println("Changed the state-machine to STATE_READING_FILENAME");
-                m_state = rostam::STATE::STATE_READING_FILENAME;
+                m_state = rostam::STATE::READING_FILENAME;
             }
         }
-        if(m_state == rostam::STATE::STATE_READING_FILENAME) 
+        if(m_state == rostam::STATE::READING_FILENAME) 
         {   
             //std::println("parse_ts_packets() -> state machine changed to: STATE_READING_FILENAME");
             if(!ts_header->hasPayload) return;
             //std::println("we have payload!");
-            const auto toCopyMax = this->m_buffer.size() - this->bufferLength;
+            const auto toCopyMax = m_buffer.size() - this->bufferLength;
             const auto toCopy = std::min(ts_header->payload.size() - static_cast<std::size_t>(curPayloadOffset), toCopyMax);
             
             std::ranges::copy_n(ts_header->payload.begin()+curPayloadOffset,toCopy,m_buffer.begin()+bufferLength);
@@ -405,9 +404,9 @@ export class rostam{
             this->bufferLength += toCopy;
             curPayloadOffset += toCopy;
 
-            if(this->bufferLength >= this->m_buffer.size())
+            if(this->bufferLength >= m_buffer.size())
             {
-                m_state = rostam::STATE:: STATE_READING_FILE;
+                m_state = rostam::STATE::READING_FILE;
                 // It seems like sometimes the EQHeader::filename_length returns wrong size thus
                 // the filenames can contain bytes from the next(?) magic bytes.
                 // NOTE: the official EQSat app sanitizes the filenames so files can only use ascii characters as their names. (A-Z a-z 0-9 etc)
@@ -439,7 +438,7 @@ export class rostam{
                 // catch(...) {std::println("error");}
             }        
         } 
-        if(m_state == rostam::STATE::STATE_READING_FILE) 
+        if(m_state == rostam::STATE::READING_FILE) 
         {
             if(!ts_header->hasPayload) return;
             
@@ -452,7 +451,7 @@ export class rostam{
             // MY TODO : FIGURE THIS OUT
             const auto chunk = ts_header->payload.subspan(curPayloadOffset, to_read);
             
-            if(this->m_current_output_file) 
+            if(m_current_output_file) 
             {
                 // MY TODO: this is really inefficent I need to rip a lot of things to convert the payload to unsigned char
                 // It's safe at least
@@ -490,29 +489,25 @@ export class rostam{
     
     private:
     enum class STATE {
-        STATE_SEARCHING_FOR_HEADER = 0, // Searching for eQsat header
-        STATE_READING_HEADER = 1, // Found the header, now reading it
-        STATE_READING_FILENAME = 2, // Done reading header, now reading filename
-        STATE_READING_FILE = 3 // Done reading filename, now reading file
+        SEARCHING_FOR_HEADER = 0, // Searching for eQsat header
+        READING_HEADER = 1, // Found the header, now reading it
+        READING_FILENAME = 2, // Done reading header, now reading filename
+        READING_FILE = 3 // Done reading filename, now reading file
     };
     std::filesystem::path m_output_path;
     STATE m_state;
     EQHeader eQHeader;
-    std::vector<unsigned char>m_buffer; // This is the final container for the output file. 
+    std::vector<unsigned char> m_buffer; // This is the final container for the output file. 
     std::vector<int> currentEQHeader;
     std::size_t currentEQHeaderBytesRead;
     std::size_t previousPacketMagicBytePatternIndex;
     std::ofstream m_current_output_file;
     std::string filename;
-    const bool m_debug;
     std::size_t bufferLength;
     std::size_t m_file_data_read;
+    const bool m_debug;
     static constexpr auto EQSAT_MAGIC_BYTES = std::to_array({0xCA, 0xFE, 0xC0, 0xDE, 0xF0, 0x0D, 0xCA, 0xFE, 0xC0, 0xDE, 0xF0, 0x0D});
     static constexpr auto EQSAT_HEADER_SIZE = 30uz; // eQsat v2 header is 30 bytes long ; 
     const std::function<void(int)> m_progress_callback;
 };
-
-
-
-
 
