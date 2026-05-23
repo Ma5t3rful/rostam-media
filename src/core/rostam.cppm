@@ -430,8 +430,7 @@ export class rostam{
                 // Open file for writing
                 // TODO change to async open call
                 m_current_output_file.open(output_file_path,std::ios::binary);
-                if(!m_current_output_file)std::runtime_error("Could not open the output file.");
-                    
+                if(!m_current_output_file)throw std::runtime_error("[Rostam Core Error] Could not open the output file. The program might opened twice(logical) or it's a premission problem(runtime).");
                 // this.curOutFile = fs.openSync(filePath, 'w', 0o640);
                 // console.log("Opened file for writing!");
                 //} 
