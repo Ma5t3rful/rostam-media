@@ -110,8 +110,14 @@ void MainWindow::on_output_btn_clicked()
 void MainWindow::on_extract_button_clicked()
 {
     using namespace std::literals::chrono_literals;
+    if(extract_btn->getText() == "Cancel")
+    {
+        extract_btn->setEnabled(false);
+        m_rostam.request_cancel();
+        return ;
+    }
     [[maybe_unused]]const auto delete_ts = delCheck->is_checked();
-    extract_btn->setEnabled(false);
+    extract_btn->setText("Cancel");
     if(m_extraction_progress_thrd.valid() and m_extraction_progress_thrd.wait_for(0ms) != std::future_status::ready)
         throw std::logic_error("Another thread is already running and the app requests for another one. This is not intended. Terminating...");
     m_extraction_progress_thrd = std::async(std::launch::async,&rostam::extract,&m_rostam,m_inputaddr,m_outputaddr);
@@ -129,6 +135,7 @@ void MainWindow::on_extraction_progress(const int progress)
     progressbar->setValue(progress);
     if(progress == 100)
     {
+        extract_btn->setText("Extract");
         extract_btn->setEnabled(true);
         const auto result_dialog = std::make_shared<ModalDialog>("Result","Extaction is completed.");
         add(result_dialog);

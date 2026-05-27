@@ -15,6 +15,7 @@ module;
 #include <ranges>
 #include <cctype>
 #include <cstdint>
+#include <atomic>
 export module rostam;
 
 // Disgusting workaround for windows. This will fully nuke std::println only on windows because for some reason, std::println throws after some time when console is disabled.
@@ -31,7 +32,7 @@ namespace std {
 #endif
 
 export class rostam{
-    
+    ////////////
     struct TSHeader {
         bool syncByte = true;
         bool TEI = false; // Transport Error Indicator
@@ -50,14 +51,23 @@ export class rostam{
         std::size_t filename_length=0;
         std::size_t file_size = 0;
     };
-    
+    enum class STATE {
+        SEARCHING_FOR_HEADER = 0, // Searching for eQsat header
+        READING_HEADER = 1, // Found the header, now reading it
+        READING_FILENAME = 2, // Done reading header, now reading filename
+        READING_FILE = 3 // Done reading filename, now reading file
+    };
+    ////////////
+
     public:
+
     rostam(const std::function<void (int)> progress_callback = nullptr):
     m_state(STATE::SEARCHING_FOR_HEADER),
     currentEQHeaderBytesRead(0),
     previousPacketMagicBytePatternIndex(0),
     bufferLength(0),
     m_file_data_read(0),
+    m_cancel_flag(false),
     m_debug(true),
     m_progress_callback(progress_callback)
     {
@@ -67,11 +77,11 @@ export class rostam{
     void extract (const std::filesystem::path& input, const std::filesystem::path& output)
     {
         constexpr static auto ts_packet_size = 188uz;
+        if(m_cancel_flag) reset_state(true);
         m_output_path = output;
         const auto input_ts_size =  std::filesystem::file_size(input);
         std::ifstream input_ts_file (input,std::ios::binary);
         std::array <int,ts_packet_size*20> input_chunk; //lets get 20 packets at once
-
         for(auto i = 0uz ; i < input_ts_size / (ts_packet_size*20) ; i++)
         {
             std::ranges::generate (input_chunk,[&input_ts_file]{return input_ts_file.get();});
@@ -82,16 +92,28 @@ export class rostam{
                 // get percent value and force it to be 99 after the extraction we call the callback with 100.
                 if(m_progress_callback)m_progress_callback(std::min<int>(i*100/static_cast<float>(input_ts_size / (ts_packet_size*20)),99));
             }
+            if(m_cancel_flag) break; // This will cancel the extraction operation upon request.
         }
         if(m_progress_callback)m_progress_callback(100);
     }
 
+    void request_cancel ()
+    {
+        m_cancel_flag.store(true);
+    }
+
+    auto is_cancelled () -> bool
+    {
+        return m_cancel_flag;
+    }
+
     private:
 
-    auto reset_state(const bool no_log) -> void
+    auto reset_state(const bool no_log = true) -> void
     {
         std::println("Reset Called");
-        if (!no_log) 
+        if(m_current_output_file) m_current_output_file.close();
+        if(!no_log) 
         {
            std::println("Scanning for files to extract...");
         }
@@ -102,12 +124,10 @@ export class rostam{
         this->filename.erase(0); // Filename of current file being extracted (if any)
         // this.fileData = []; // Data that has been read for current file. Array of Uint8Arrays (I think its never used)
         m_file_data_read = 0uz; // How much file data has been read so far
-        // this.cancelFlag = false;
-            std::filesystem::path m_output_path;
-        
         currentEQHeader.erase(currentEQHeader.begin(),currentEQHeader.end());
         currentEQHeaderBytesRead = 0;
         previousPacketMagicBytePatternIndex = 0;
+        m_cancel_flag.store(false);
     }
 
 
@@ -119,7 +139,8 @@ export class rostam{
         const auto bytes_to_uint64 = [](const std::span<const int> byte_span, const std::size_t offset){
             const static auto shift_left_full64 = 56;
             auto value = std::uint64_t();
-            for (int i = 0; i < 8; ++i) {
+            for(int i = 0; i < 8; ++i) 
+            {
                 value = (value >> 8) | (static_cast<std::uint64_t>(byte_span[i+offset]) << shift_left_full64);
                 // std::print("{:X} - ",buffer[i + offset]);
             }
@@ -432,7 +453,6 @@ export class rostam{
                 m_current_output_file.open(output_file_path,std::ios::binary);
                 if(!m_current_output_file)throw std::runtime_error("[Rostam Core Error] Could not open the output file. The program might opened twice(logical) or it's a premission problem(runtime).");
                 // this.curOutFile = fs.openSync(filePath, 'w', 0o640);
-                // console.log("Opened file for writing!");
                 //} 
                 // catch(...) {std::println("error");}
             }        
@@ -472,27 +492,20 @@ export class rostam{
             
             if(m_file_data_read >= this->eQHeader.file_size) 
             {
-                // this.curOutFile = null; // WTF is this
-                m_current_output_file.close();
                 // MY TODO: Sometimes a healthy file gets overritten by a broken one. This usually happens with heavier files like videos. 
                 // Rostam Media does not provide a proper way to handle these types of errors so we have to verify the files on our own. 
                 // We can check the structure of certain files like videos or...
-
+                m_current_output_file.close();
                 std::filesystem::rename(m_output_path/(filename+".part"),m_output_path/filename);
                 std::println("Completed extraction of file:\n  {}", this->filename);
-                reset_state(false);    
+                reset_state(false);
             }
         }
     }
     
     
     private:
-    enum class STATE {
-        SEARCHING_FOR_HEADER = 0, // Searching for eQsat header
-        READING_HEADER = 1, // Found the header, now reading it
-        READING_FILENAME = 2, // Done reading header, now reading filename
-        READING_FILE = 3 // Done reading filename, now reading file
-    };
+
     std::filesystem::path m_output_path;
     STATE m_state;
     EQHeader eQHeader;
@@ -504,9 +517,10 @@ export class rostam{
     std::string filename;
     std::size_t bufferLength;
     std::size_t m_file_data_read;
+    std::atomic_bool m_cancel_flag;
     const bool m_debug;
     static constexpr auto EQSAT_MAGIC_BYTES = std::to_array({0xCA, 0xFE, 0xC0, 0xDE, 0xF0, 0x0D, 0xCA, 0xFE, 0xC0, 0xDE, 0xF0, 0x0D});
-    static constexpr auto EQSAT_HEADER_SIZE = 30uz; // eQsat v2 header is 30 bytes long ; 
+    static constexpr auto EQSAT_HEADER_SIZE = 30uz; // EQSat v2 header is 30 bytes long ; 
     const std::function<void(int)> m_progress_callback;
 };
 
