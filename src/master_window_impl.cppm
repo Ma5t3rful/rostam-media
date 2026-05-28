@@ -137,7 +137,7 @@ void MainWindow::on_extraction_progress(const int progress)
     {
         extract_btn->setText("Extract");
         extract_btn->setEnabled(true);
-        const auto result_dialog = std::make_shared<ModalDialog>("Result","Extaction is completed.");
+        const auto result_dialog = std::make_shared<ModalDialog>("Result",m_rostam.is_cancelled()?"Cancelled the extraction.":"Extaction is completed.");
         add(result_dialog);
     }
 }
