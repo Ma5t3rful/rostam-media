@@ -49,5 +49,6 @@ public tgui::Gui
     void on_extraction_progress(const int progress);
     void on_options_button_clicked ();
     void on_about_clicked ();
+    void on_satelite_info_clicked ();
     void on_quit_clicked (); //quit in context menu
 };

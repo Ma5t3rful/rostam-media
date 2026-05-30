@@ -79,7 +79,7 @@ export class rostam{
         constexpr static auto ts_packet_size = 188uz;
         if(m_cancel_flag) reset_state(true);
         m_output_path = output;
-        const auto input_ts_size =  std::filesystem::file_size(input);
+        const auto input_ts_size = std::filesystem::file_size(input);
         std::ifstream input_ts_file (input,std::ios::binary);
         std::array <int,ts_packet_size*20> input_chunk; //lets get 20 packets at once
         for(auto i = 0uz ; i < input_ts_size / (ts_packet_size*20) ; i++)
@@ -130,7 +130,6 @@ export class rostam{
         m_cancel_flag.store(false);
     }
 
-
     auto parseEQHeader(const std::span<const int> eq_header) const -> EQHeader //OK, Works properly
     {
         // this was from the js file this.currentEQHeader = Buffer.alloc(EQSAT_HEADER_SIZE_WITHOUT_MAGIC_BYTES);
@@ -147,7 +146,7 @@ export class rostam{
             // std::println("\n-> so the value is: 0x{0:X} ({0})",value);
             return value;
         };
-        
+
         return {
             eq_header[0], // The first 12 bytes are the magic bytes
             eq_header[1], // flags
@@ -165,7 +164,7 @@ export class rostam{
         // PES headers don't have to be aligned with the start of the MPEG-TS packet payloads
         // but in the streams we generate with ffmpeg they are always aligned
         if(payloadSize < 6) return 0;
-    
+        
         const auto offset = header.payloadOffset;
         
         // Check for PES start code prefix
@@ -183,11 +182,11 @@ export class rostam{
             {
                 return 0;
             }
-    
+            
             // How many more bytes of optional PES header are still left
             const auto pesHeaderLeft = packet[offset + 8];
             const auto pesHeaderSize = 9 + pesHeaderLeft;
-    
+            
             if(pesHeaderSize > payloadSize) 
             {
                 return 0;

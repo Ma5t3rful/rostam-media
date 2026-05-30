@@ -145,7 +145,10 @@ void MainWindow::on_extraction_progress(const int progress)
 
 void MainWindow::on_options_button_clicked ()
 {
-    constexpr auto options = std::to_array({"✔ Official Website ↗","♜ Github Repo ↗"," ℹ️  About this app"});
+    constexpr auto options = std::to_array({"✔ Official Website ↗",
+                                            "♜ Github Repo ↗",
+                                            "⚲ Satelite info",
+                                            " ℹ️  About this app"});
     const auto options_context_menu = tgui::ContextMenu::create();
     std::ranges::for_each (options,std::bind_front(static_cast<void(tgui::ContextMenu::*)(const tgui::String&)>(
         &tgui::ContextMenu::addMenuItem),options_context_menu)
@@ -153,7 +156,8 @@ void MainWindow::on_options_button_clicked ()
     options_context_menu->setPosition(tgui::bindRight(options_button),tgui::bindBottom(options_button));
     options_context_menu->connectMenuItem(options[0],&cross_platform::open_link,"https://rostam.media");
     options_context_menu->connectMenuItem(options[1],&cross_platform::open_link,"https://github.com/ma5t3rful/rostam-media");
-    options_context_menu->connectMenuItem(options[2],&MainWindow::on_about_clicked,this);
+    options_context_menu->connectMenuItem(options[2],&MainWindow::on_satelite_info_clicked,this);
+    options_context_menu->connectMenuItem(options[3],&MainWindow::on_about_clicked,this);
     add(options_context_menu);
     options_context_menu->openMenu();
 }
@@ -164,11 +168,17 @@ void MainWindow::on_about_clicked ()
     add(about_dialog);
 }
 
+void MainWindow::on_satelite_info_clicked ()
+{
+    const auto sat_info_dialog = std::make_shared<ModalDialog>("Satelite Information","Satelite: Yah-sat\nFrequency: 11766\nPolarization: Vertical\nSymbol Rate: 27500");
+    [[maybe_unused]] const auto actual_dialog = sat_info_dialog->getWidgets().front();
+    add(sat_info_dialog);
+}
+
 void MainWindow::on_quit_clicked()
 {
     // TODO: Implement this.
 }
-
 
 
 MainWindow::~MainWindow()
