@@ -111,7 +111,7 @@ export class rostam{
 
     auto reset_state(const bool no_log = true) -> void
     {
-        std::println("Reset Called");
+        if(m_debug) std::println("Reset Called");
         if(m_current_output_file) m_current_output_file.close();
         if(!no_log) 
         {
@@ -359,9 +359,9 @@ export class rostam{
             currentEQHeaderBytesRead = toRead;
             return -1;
         }
-        std::println("trying to copy data in checkForEQHeader() no cond");
+        if(m_debug) std::println("trying to copy data in checkForEQHeader() no cond");
         std::ranges::copy_n(payload.cbegin()+header_offset,EQSAT_HEADER_SIZE_WITHOUT_MAGIC_BYTES,currentEQHeader.begin());
-        std::println("Done current eQHeader is: {}",currentEQHeader);
+        if(m_debug) std::println("Done current eQHeader is: {}",currentEQHeader);
         //buffer. copy( target,        targetStart, sourceStart, sourceEnd )
         //payload.copy(this.currentEQHeader, 0, headerOffset, headerOffset + EQSAT_HEADER_SIZE_WITHOUT_MAGIC_BYTES);
 
@@ -372,7 +372,7 @@ export class rostam{
     auto parse_ts_packets(const std::span<const int> packet) -> void
     {
         // constexpr auto packet_size = 188uz;
-        if(packet.at(0) != 0x47)std::println("WARNING: Out of sync detected: 0x{:X}", packet.at(0));
+        if(packet.at(0) != 0x47) std::println("WARNING: Out of sync detected: 0x{:X}", packet.at(0));
         // If the packet is smaller than the MPEG-TS packet header, skip
         if(packet.size() < 4) return;
 
@@ -406,7 +406,7 @@ export class rostam{
                 //this->bufferLength = 0;
                 // tsHeader.payloadOffset += EQSAT_HEADER_SIZE;
                 // tsHeader.payloadLength -= EQSAT_HEADER_SIZE;
-                std::println("Changed the state-machine to STATE_READING_FILENAME");
+                if(m_debug) std::println("Changed the state-machine to STATE_READING_FILENAME");
                 m_state = rostam::STATE::READING_FILENAME;
             }
         }
