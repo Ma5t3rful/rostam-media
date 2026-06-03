@@ -183,5 +183,7 @@ void MainWindow::on_quit_clicked()
 
 MainWindow::~MainWindow()
 {
+    m_rostam.request_cancel();
+    // Rethrow all exceptions thrown from the other thread.
     if(m_extraction_progress_thrd.valid() and m_extraction_progress_thrd.wait_for(std::chrono::microseconds(0)) == std::future_status::ready)m_extraction_progress_thrd.get();
 }
