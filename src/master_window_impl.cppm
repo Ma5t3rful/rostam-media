@@ -8,6 +8,7 @@ module;
 #include <TGUI/TGUI.hpp>
 #include <TGUI/Backend/GLFW-OpenGL3.hpp>
 #include <array>
+#include <ranges>
 
 module master_window:impl;
 import master_window;
@@ -162,18 +163,41 @@ void MainWindow::on_options_button_clicked ()
     options_context_menu->openMenu();
 }
 
+
 void MainWindow::on_about_clicked ()
 {
     const auto about_dialog = std::make_shared<AboutDialog>();
     add(about_dialog);
 }
 
+
 void MainWindow::on_satelite_info_clicked ()
 {
-    const auto sat_info_dialog = std::make_shared<ModalDialog>("Satelite Information","Satelite: Yah-sat\nFrequency: 11766\nPolarization: Vertical\nSymbol Rate: 27500");
-    [[maybe_unused]] const auto actual_dialog = sat_info_dialog->getWidgets().front();
+    [[maybe_unused]] constexpr auto properties = "Satelite: Yah-sat\nFrequency: 11766\nPolarization: Vertical\nSymbol Rate: 27500";
+    const auto sat_info_dialog = std::make_shared<ModalDialog>("Satelite Information","");
+    const auto actual_dialog = std::static_pointer_cast<tgui::MessageBox>(sat_info_dialog->getWidgets().front());
+    const auto horiz_lay = tgui::HorizontalLayout::create({"100%",100});
+    actual_dialog->setSize(400,165);
+    horiz_lay->getRenderer()->setSpaceBetweenWidgets(6);
+
+    std::ranges::for_each(std::to_array({"Satelite\nYahsat","Frequency\n11766","Polarization\nVertical","Symbol Rate\n27500"})|std::views::enumerate,[&horiz_lay](const auto& str){
+        constexpr auto size = tgui::Vector2f (100.f,100.f);
+        const auto p = tgui::Panel::create();
+        const auto label = tgui::Label::create(std::get<1>(str));
+        label->setSize("100%");
+        label->setHorizontalAlignment(tgui::HorizontalAlignment::Center);
+        label->setVerticalAlignment(tgui::VerticalAlignment::Center);
+        p->add(label);
+        p->setSize(size);
+        p->getRenderer()->setBackgroundColor(std::get<0>(str)%2 == 0?"#cf923d":"#c98b35");
+        p->getRenderer()->setRoundedBorderRadius(10);
+        horiz_lay->add(p);
+    });
+    
+    actual_dialog->add(horiz_lay);
     add(sat_info_dialog);
 }
+
 
 void MainWindow::on_quit_clicked()
 {
