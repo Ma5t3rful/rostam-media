@@ -6,7 +6,8 @@
 import master_window;
 import cross_platform;
 
-auto main (int argc, char** argv) -> int
+
+auto main () -> int
 {
     std::println("Initializing Rostam...");
     glfwSetErrorCallback([](const auto err_code,const auto desc)
