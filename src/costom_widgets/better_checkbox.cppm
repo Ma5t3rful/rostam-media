@@ -18,7 +18,7 @@ class better_checkbox
         add(m_checkbox);
     }
     
-    auto is_checked () -> bool const
+    auto is_checked () const -> bool
     {
         return m_checkbox->isChecked();
     }

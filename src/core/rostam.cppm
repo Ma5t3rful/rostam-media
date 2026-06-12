@@ -90,7 +90,7 @@ export class rostam{
             if(i%20 == 0)
             {
                 // get percent value and force it to be 99 after the extraction we call the callback with 100.
-                if(m_progress_callback)m_progress_callback(std::min<int>(i*100/static_cast<float>(input_ts_size / (ts_packet_size*20)),99));
+                if(m_progress_callback)m_progress_callback(std::min<int>(i*100/(input_ts_size / (ts_packet_size*20)),99));
             }
             if(m_cancel_flag) break; // This will cancel the extraction operation upon request.
         }
