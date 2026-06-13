@@ -13,3 +13,4 @@ Keywords=tv;television;extract;media;satellite
 Exec=rostam-media
 Icon=rostam-media
 Categories=AudioVideo;Archiving;
+StartupWMClass=RostamMedia

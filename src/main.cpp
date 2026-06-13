@@ -15,6 +15,11 @@ auto main () -> int
         std::println("\033[31m[ROSTAM GLFW ERROR]\033[0m glfw error detected: {} - {}", err_code, desc);
     });
     glfwInit();
+    if constexpr(cross_platform::platform() == cross_platform::os::UNIX)
+    {
+        glfwWindowHintString(GLFW_X11_CLASS_NAME, "RostamMedia");
+        glfwWindowHintString(GLFW_X11_INSTANCE_NAME, "RostamMedia");
+    }
     auto* window = glfwCreateWindow(1000, 500, "Rostam Media", nullptr, nullptr);
     glfwSetWindowSizeLimits(window, 280, 250, GLFW_DONT_CARE, GLFW_DONT_CARE);
     glfwMakeContextCurrent(window);
