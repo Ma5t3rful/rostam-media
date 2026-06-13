@@ -1,4 +1,5 @@
 // This module has the facillity 
+
 module;
 #if __unix
 #include <format>
@@ -66,12 +67,22 @@ namespace cross_platform
         return std::filesystem::path(path_buffer).remove_filename();
         #endif
     }
+
+    // Wrapped std::getenv() to provide a safer API using std::optional
+    // std::getenv is thread-safe since C++11 as long as you don't write to env vars.
+    [[nodiscard]]
+    auto getenv (const std::string& env) -> std::optional<const char*>
+    {
+        const auto value_env = std::getenv(env.c_str());
+        if(not value_env or std::string_view(value_env).empty()) return std::nullopt;
+        return value_env;
+    }
     
-    
+
     auto find_file (const std::string_view filename) -> std::optional<std::filesystem::path>
     {
-        if(const auto appdir_env = std::getenv("APPDIR"); appdir_env)
-            if(const auto addr = std::filesystem::path(appdir_env)/"share/rostam_theme"/filename; 
+        if(const auto appdir_env = cross_platform::getenv("APPDIR"))
+            if(const auto addr = std::filesystem::path(*appdir_env)/"share/rostam_theme"/filename; 
             std::filesystem::exists(addr))
                 return addr;
         
