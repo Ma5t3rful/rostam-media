@@ -150,8 +150,10 @@ void MainWindow::on_options_button_clicked ()
                                             "♜ Github Repo ↗",
                                             "⚲ Satelite info",
                                             " ℹ️  About this app",
+                                            "-",
                                             "☓ Quit"});
     const auto options_context_menu = tgui::ContextMenu::create();
+    options_context_menu->setItemHeight(26);
     options_context_menu->setPosition(tgui::bindRight(options_button),tgui::bindBottom(options_button));
     std::ranges::for_each (options,std::bind_front(static_cast<void(tgui::ContextMenu::*)(const tgui::String&)>(
         &tgui::ContextMenu::addMenuItem),options_context_menu)
@@ -161,7 +163,7 @@ void MainWindow::on_options_button_clicked ()
     options_context_menu->connectMenuItem(options[1], &cross_platform::open_link, "https://github.com/ma5t3rful/rostam-media");
     options_context_menu->connectMenuItem(options[2], &MainWindow::on_satelite_info_clicked, this);
     options_context_menu->connectMenuItem(options[3], &MainWindow::on_about_clicked, this);
-    options_context_menu->connectMenuItem(options[4], &glfwSetWindowShouldClose, getWindow(), true);
+    options_context_menu->connectMenuItem(options[5], &glfwSetWindowShouldClose, getWindow(), true);
     add(options_context_menu);
     options_context_menu->openMenu();
 }
