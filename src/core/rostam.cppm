@@ -102,7 +102,7 @@ export class rostam{
         m_cancel_flag.store(true);
     }
 
-    auto is_cancelled () -> bool
+    auto is_cancelled () const -> bool
     {
         return m_cancel_flag;
     }
@@ -171,8 +171,8 @@ export class rostam{
         if(packet[offset] == 0x00 and packet[offset+1] == 0x00 and packet[offset+2] == 0x01) 
         {
             // This is the PES Stream ID used for DVB type AC-3 streams
-            if(const auto streamID = packet[offset + 3];
-            streamID != 0xbd) 
+            if(const auto stream_id = packet[offset + 3]; 
+            stream_id != 0xbd) 
             {
                 return 0;
             }
@@ -322,7 +322,7 @@ export class rostam{
     auto checkForEQHeader(const TSHeader& tsHeader) -> long long 
     {
         constexpr auto EQSAT_HEADER_SIZE = 30; // eQsat v2 header is 30 bytes long
-        constexpr auto EQSAT_HEADER_SIZE_WITHOUT_MAGIC_BYTES = EQSAT_HEADER_SIZE - EQSAT_MAGIC_BYTES.size();
+        constexpr auto EQSAT_HEADER_SIZE_WITHOUT_MAGIC_BYTES = EQSAT_HEADER_SIZE - EQSAT_MAGIC_BYTES.size(); 
         if(!tsHeader.hasPayload) return -1;
         const auto payload = tsHeader.payload;
 
@@ -376,7 +376,7 @@ export class rostam{
         // If the packet is smaller than the MPEG-TS packet header, skip
         if(packet.size() < 4) return;
 
-        const auto ts_header = this->parse_ts_header(packet); // parse MPEG-TS header
+        const auto ts_header = parse_ts_header(packet); // parse MPEG-TS header
         //if(tsHeader.has_value())std::println("{}",tsHeader->payload);
         // If parseTSHeader() returns false then the PID didn't match
         // or the header failed to parse so skip the packet
@@ -433,9 +433,9 @@ export class rostam{
                 // the code below can achieve most of the sanitizer algorithm.
                 filename = m_buffer 
                 | std::views::drop_while([](const auto c){return c == '.';}) // removes the first '.' if exists
-                | std::views::filter([](const auto c){return isascii(c) and not std::iscntrl(c);}) // avoid currupted/control chars
+                | std::views::filter([](const auto c){return isascii(c) and not std::iscntrl(c) and c != '%';}) // avoid currupted/control chars
                 | std::views::transform ([windows_illigal=std::string_view(":<>|*?\"\\/")](const auto c)->char {
-                    if(windows_illigal.contains(c)) return '-'; else return c;}) // replace illigal chars for windows
+                    return windows_illigal.contains(c)?'-':c;}) // replace illigal chars for windows
                 | std::ranges::to<std::string>();
 
                 std::println("Extracting file: {}", filename);
@@ -460,7 +460,7 @@ export class rostam{
         {
             if(!ts_header->hasPayload) return;
             
-            const auto to_read = std::min(ts_header->payload.size() - static_cast<std::size_t>(curPayloadOffset), this->eQHeader.file_size - this->m_file_data_read);
+            const auto to_read = std::min(ts_header->payload.size() - static_cast<std::size_t>(curPayloadOffset), this->eQHeader.file_size - m_file_data_read);
 
             // subspan makes a span, not a copy
             // but since that's just the payload + 4 bytes 
