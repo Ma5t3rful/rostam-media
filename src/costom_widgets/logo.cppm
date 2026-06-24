@@ -34,7 +34,7 @@ public tgui::Group
 
     void size_change_fn (const tgui::Vector2f size)
     {
-        const auto pic_size = std::min(size.y,m_max_size);
+        const auto pic_size = std::min(std::min(size.x,size.y),m_max_size);
         m_pic->setSize(pic_size, pic_size);
     }
 
