@@ -1,38 +1,50 @@
-
 module;
+#include "TGUI/Layout.hpp"
+#include "TGUI/Renderers/ChildWindowRenderer.hpp"
 #include "TGUI/Widget.hpp"
-#include <TGUI/TGUI.hpp>
-#include <string_view>
-export module modal_dialog;
+#include "TGUI/Widgets/ChildWindow.hpp"
+export module modal_window;
+import modal_overlay;
 
-export class ModalDialog :
-public tgui::ChildWindow
+export class ModalDialog
+:public ModalOverlay
 {
-    public:
-    ModalDialog(const std::string_view title,const std::string_view str):
-    m_message_box(tgui::MessageBox::create(tgui::String(title),tgui::String(str),{"OK"}))
+    public: 
+    ModalDialog(const std::string& title=""):
+    m_inner_window(tgui::ChildWindow::create(title))
     {
-        setSize("100%");
-        const auto renderer = getRenderer();
-        renderer->setBorderColor("transparent");
-        renderer->setBackgroundColor("#00000055");
-        renderer->setTitleBarHeight(0); // this hack will remove the title bar of the overlay child window.
-        setPositionLocked(true);
-        m_message_box->setOrigin(0.5f,0.5f);
-        m_message_box->setPosition("50%", "50%");
-        m_message_box->onButtonPress(&ModalDialog::on_ok_clicked,this);
-        add(m_message_box);
+        m_inner_window->setOrigin(0.5,0.5);
+        m_inner_window->setPosition("50%","50%");
+        m_inner_window->onClose(&tgui::ChildWindow::close,this);
+        ModalOverlay::add(m_inner_window);
     }
 
-    private:
-    auto on_ok_clicked() -> void 
+    auto add (const tgui::Widget::Ptr& widget, const tgui::String& name="") -> void override
     {
-        m_message_box->close();
-        remove(m_message_box);
-        close();
+        m_inner_window->add(widget,name);
     }
 
+    auto set_size (const tgui::Layout2d& size2d) -> void
+    {
+        m_inner_window->setSize(size2d);
+    }
+
+    auto set_title (const std::string& title) -> void
+    {
+        m_inner_window->setTitle(title);
+    }
+
+    auto remove_all_from_inner () -> void
+    {
+        m_inner_window->removeAllWidgets();
+    }
     
+    [[nodiscard]]
+    auto get_inner_renderer () const -> tgui::ChildWindowRenderer*
+    {
+        return m_inner_window->getRenderer();
+    }
+
     private:
-    tgui::MessageBox::Ptr m_message_box;
+    const tgui::ChildWindow::Ptr m_inner_window;
 };

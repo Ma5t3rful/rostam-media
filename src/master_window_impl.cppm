@@ -15,9 +15,10 @@ import master_window;
 import better_checkbox;
 import rostam_logo;
 import rostam;
-import modal_dialog;
+import modal_messagebox;
 import about_dialog;
 import cross_platform;
+import modal_window;
 
 MainWindow::MainWindow(GLFWwindow* window):
 tgui::Gui(window),
@@ -138,7 +139,7 @@ void MainWindow::on_extraction_progress(const int progress)
     {
         extract_btn->setText("Extract");
         extract_btn->setEnabled(true);
-        const auto result_dialog = std::make_shared<ModalDialog>("Result",m_rostam.is_cancelled()?"Cancelled the extraction.":"Extaction is completed.");
+        const auto result_dialog = std::make_shared<ModalMessageBox>("Result",m_rostam.is_cancelled()?"Cancelled the extraction.":"Extaction is completed.");
         add(result_dialog);
     }
 }
@@ -179,10 +180,9 @@ void MainWindow::on_about_clicked ()
 void MainWindow::on_satelite_info_clicked ()
 {
     [[maybe_unused]] constexpr auto properties = "Satelite: Yah-sat\nFrequency: 11766\nPolarization: Vertical\nSymbol Rate: 27500";
-    const auto sat_info_dialog = std::make_shared<ModalDialog>("Satelite Information","");
-    const auto actual_dialog = std::static_pointer_cast<tgui::MessageBox>(sat_info_dialog->getWidgets().front());
+    const auto sat_info_dialog = std::make_shared<ModalDialog>("Satelite Information");
     const auto horiz_lay = tgui::HorizontalLayout::create({"100%",100});
-    actual_dialog->setSize(400,165);
+    sat_info_dialog->set_size({400,165});
     horiz_lay->getRenderer()->setSpaceBetweenWidgets(6);
 
     std::ranges::for_each(std::to_array({"Satelite\nYahsat","Frequency\n11766","Polarization\nVertical","Symbol Rate\n27500"})|std::views::enumerate,[&horiz_lay](const auto& str){
@@ -199,7 +199,7 @@ void MainWindow::on_satelite_info_clicked ()
         horiz_lay->add(p);
     });
     
-    actual_dialog->add(horiz_lay);
+    sat_info_dialog->add(horiz_lay);
     add(sat_info_dialog);
 }
 
