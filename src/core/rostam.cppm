@@ -13,9 +13,9 @@ module;
 #include <optional>
 #include <vector>
 #include <ranges>
-#include <cctype>
 #include <cstdint>
 #include <atomic>
+#include "uni_algo/ranges_conv.h"
 export module rostam;
 
 // Disgusting workaround for windows. This will fully nuke std::println only on windows because for some reason, std::println throws after some time when console is disabled.
@@ -427,16 +427,18 @@ export class rostam{
             if(this->bufferLength >= m_buffer.size())
             {
                 m_state = rostam::STATE::READING_FILE;
+
                 // It seems like sometimes the EQHeader::filename_length returns wrong size thus
                 // the filenames can contain bytes from the next(?) magic bytes.
-                // NOTE: the official EQSat app sanitizes the filenames so files can only use ascii characters as their names. (A-Z a-z 0-9 etc)
-                // the code below can achieve most of the sanitizer algorithm.
-                filename = m_buffer 
+                // This is a uncode aware filter to avoid Illigal OS-reserved charachters
+                // TODO: Avoid utf-8 currupted chars
+                filename = m_buffer
+                | una::views::utf8
                 | std::views::drop_while([](const auto c){return c == '.';}) // removes the first '.' if exists
-                | std::views::filter([](const auto c){return isascii(c) and not std::iscntrl(c) and c != '%';}) // avoid currupted/control chars
-                | std::views::transform ([windows_illigal=std::string_view(":<>|*?\"\\/")](const auto c)->char {
+                //| std::views::filter([](const auto c){return isascii(c) and not std::iscntrl(c) and c != '%';}) // TODO: avoid utf-8 currupted chars
+                | std::views::transform ([windows_illigal=std::u32string_view(U":<>|*?\"\\/")](const auto c)->char32_t {
                     return windows_illigal.contains(c)?'-':c;}) // replace illigal chars for windows
-                | std::ranges::to<std::string>();
+                | una::ranges::to_utf8<std::string>();
 
                 std::println("Extracting file: {}", filename);
                 // TODO is Number big enough?
@@ -450,7 +452,7 @@ export class rostam{
                 // Open file for writing
                 // TODO change to async open call
                 m_current_output_file.open(output_file_path,std::ios::binary);
-                if(!m_current_output_file)throw std::runtime_error("[Rostam Core Error] Could not open the output file. The program might opened twice(logical) or it's a premission problem(runtime).");
+                if(!m_current_output_file)throw std::runtime_error("[Rostam Core Error] Could not open the output file. The program might opened a file twice(logical) or it's a premission problem(runtime).");
                 // this.curOutFile = fs.openSync(filePath, 'w', 0o640);
                 //} 
                 // catch(...) {std::println("error");}

@@ -12,6 +12,10 @@ FetchContent_Declare( #TODO: Switch from nightly to stable
     TGUI
     URL "https://github.com/texus/TGUI/archive/refs/tags/v1.12.0.tar.gz"
 )
+FetchContent_Declare(uni-algo
+  URL https://github.com/uni-algo/uni-algo/archive/v1.0.0.tar.gz
+)
+FetchContent_MakeAvailable(uni-algo)
 FetchContent_MakeAvailable(TGUI)
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/resource/dark.txt  ${CMAKE_CURRENT_BINARY_DIR} COPYONLY)
 configure_file(src/version.cppm.in ${CMAKE_CURRENT_BINARY_DIR}/version.cppm)
@@ -38,7 +42,7 @@ if(WIN32) # compiler options and workarounds for windows
     target_link_libraries(${PROJECT_NAME} PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/resource/rostam_windows_icon.o") # icon for windows 
     target_link_libraries(${PROJECT_NAME} PRIVATE -lstdc++exp) # workaround for undefined reference for std::write_to_terminal...
 endif()
-target_link_libraries(${PROJECT_NAME} PRIVATE TGUI::TGUI)
+target_link_libraries(${PROJECT_NAME} PRIVATE TGUI::TGUI uni-algo::uni-algo)
 target_link_options(${PROJECT_NAME} PUBLIC -static-libstdc++)
 
 ###### INSTALLATION PROCESS ######
