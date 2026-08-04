@@ -24,7 +24,7 @@ export module rostam;
 #define println _dummy_println_win_
 namespace std {
     template <class... T>
-    void _dummy_println_win_ (const T&... _)
+    void _dummy_println_win_ ([[maybe_unused]] const T&... _)
     {
         // Do nothing
     }
