@@ -430,14 +430,14 @@ export class rostam{
 
                 // It seems like sometimes the EQHeader::filename_length returns wrong size thus
                 // the filenames can contain bytes from the next(?) magic bytes.
-                // This is a uncode aware filter to avoid Illigal OS-reserved charachters
-                // TODO: Avoid utf-8 currupted chars
+                // This is a uncode aware filter to avoid illigal, OS-reserved or corrupted charachters
                 filename = m_buffer
                 | una::views::utf8
                 | std::views::drop_while([](const auto c){return c == '.';}) // removes the first '.' if exists
-                //| std::views::filter([](const auto c){return isascii(c) and not std::iscntrl(c) and c != '%';}) // TODO: avoid utf-8 currupted chars
-                | std::views::transform ([windows_illigal=std::u32string_view(U":<>|*?\"\\/")](const auto c)->char32_t {
-                    return windows_illigal.contains(c)?'-':c;}) // replace illigal chars for windows
+                | std::views::filter([](const auto c){const auto ascii_c = std::min<char32_t>(c,128);return not(isascii(ascii_c) and std::iscntrl(ascii_c))
+                                                                                                            and c != 0xfffd 
+                                                                                                            and c != U'%';}) // avoid utf-8 currupted chars
+                | std::views::transform ([windows_illigal=std::u32string_view(U":<>|*?\"\\/")](const auto c){return windows_illigal.contains(c)?U'-':c;}) // replace illigal chars
                 | una::ranges::to_utf8<std::string>();
 
                 std::println("Extracting file: {}", filename);
@@ -451,6 +451,7 @@ export class rostam{
                 //try {
                 // Open file for writing
                 // TODO change to async open call
+                if(m_current_output_file.is_open())std::println("Warning: another file is already open. Opening another one anyway :/");
                 m_current_output_file.open(output_file_path,std::ios::binary);
                 if(!m_current_output_file)throw std::runtime_error("[Rostam Core Error] Could not open the output file. The program might opened a file twice(logical) or it's a premission problem(runtime).");
                 // this.curOutFile = fs.openSync(filePath, 'w', 0o640);
