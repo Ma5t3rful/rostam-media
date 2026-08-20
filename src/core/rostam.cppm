@@ -271,12 +271,13 @@ export class rostam{
     } // parse_ts_header(packet) 
 
 
+    //searches for cafec0def00d aka EQSAT_MAGIC_BYTES
     auto findMagicBytes(const std::span<const int> payload) -> long long 
     {
         if(payload.size() >= 12) 
         {
             const auto magic_bytes_search = std::ranges::search(payload,EQSAT_MAGIC_BYTES);
-            const auto magicBytesOffset = std::distance(payload.begin(),magic_bytes_search.begin());
+            const auto magicBytesOffset = std::distance(payload.cbegin(),magic_bytes_search.cbegin());
             
             if(not magic_bytes_search.empty())
             {
@@ -319,25 +320,26 @@ export class rostam{
     }
 
     //changes currentEQHeader
-    auto checkForEQHeader(const TSHeader& tsHeader) -> long long 
+    auto checkForEQHeader(const TSHeader& ts_header) -> long long 
     {
         constexpr auto EQSAT_HEADER_SIZE = 30; // eQsat v2 header is 30 bytes long
         constexpr auto EQSAT_HEADER_SIZE_WITHOUT_MAGIC_BYTES = EQSAT_HEADER_SIZE - EQSAT_MAGIC_BYTES.size(); 
-        if(!tsHeader.hasPayload) return -1;
-        const auto payload = tsHeader.payload;
+        if(not ts_header.hasPayload) return -1;
+        const auto& payload = ts_header.payload;
 
         // If we already read some of the header bytes from the previous packet
         // then try to read the rest, or at least some more header bytes from this packet
         if(not this->currentEQHeader.empty()) 
         {
-            const auto bytesRemaining = EQSAT_HEADER_SIZE_WITHOUT_MAGIC_BYTES - currentEQHeaderBytesRead;
-            const auto to_copy = std::min(payload.size(), bytesRemaining);
+            const auto remaining_bytes = EQSAT_HEADER_SIZE_WITHOUT_MAGIC_BYTES - currentEQHeaderBytesRead;
+            const auto to_copy = std::min(payload.size(), remaining_bytes);
             std::println("trying to copy from payload to currentEQHeader in checkForEQHeader() in the first if-statement to_copy is: {} and payload.size() is: {}",to_copy,payload.size());
             if(to_copy > payload.size())throw std::logic_error("to_copy > payload.size()");
-            std::ranges::copy_n(payload.begin(), to_copy, currentEQHeader.begin());
+            if(to_copy > currentEQHeader.size() - currentEQHeaderBytesRead)throw std::logic_error("currentEQHeader buffer overflow");
+            std::ranges::copy_n(payload.begin(), to_copy, currentEQHeader.begin() + currentEQHeaderBytesRead);
             // buffer.copy (target              , targetStart                  , sourceStart, sourceEnd);
             // payload.copy(this.currentEQHeader, this.currentEQHeaderBytesRead, 0, to_copy);
-            if(to_copy < bytesRemaining) return -1;
+            if(to_copy < remaining_bytes) return -1;
             return to_copy;
         }
         
@@ -350,21 +352,24 @@ export class rostam{
         // but the header is bigger than the remaining payload of the packet
         // meaning that the header spans into the next packet
         if(header_offset + EQSAT_HEADER_SIZE_WITHOUT_MAGIC_BYTES + 1 > payload.size()) {
-            const auto toRead = payload.size() - header_offset;
+            const auto to_read = payload.size() - header_offset;
             // Copy the bytes beginning at the header offset in the payload to this.currentEQHeader
+            if(m_debug)
+            {
             std::println("trying to copy data in checkForEQHeader() second if-statement");
+                std::println("payload to copy={}",std::span(payload.cbegin()+header_offset,payload.cend())|std::views::transform([](const auto val){return std::format("{:X}",val);}));
+            }
             std::ranges::copy(payload.cbegin()+header_offset,payload.cend(),currentEQHeader.begin());
+            if(m_debug) std::println("currenteqheader={}",currentEQHeader|std::views::transform([](const auto val){return std::format("{:X}",val);}));
             // buffer.copy (target,         targetStart , sourceStart);
             // payload.copy(this.currentEQHeader, 0     , headerOffset);
-            currentEQHeaderBytesRead = toRead;
+            currentEQHeaderBytesRead = to_read;
             return -1;
         }
         if(m_debug) std::println("trying to copy data in checkForEQHeader() no cond");
         std::ranges::copy_n(payload.cbegin()+header_offset,EQSAT_HEADER_SIZE_WITHOUT_MAGIC_BYTES,currentEQHeader.begin());
-        if(m_debug) std::println("Done current eQHeader is: {}",currentEQHeader);
         //buffer. copy( target,        targetStart, sourceStart, sourceEnd )
         //payload.copy(this.currentEQHeader, 0, headerOffset, headerOffset + EQSAT_HEADER_SIZE_WITHOUT_MAGIC_BYTES);
-
         return header_offset + EQSAT_HEADER_SIZE_WITHOUT_MAGIC_BYTES;
     } 
 
@@ -391,16 +396,16 @@ export class rostam{
             curPayloadOffset = this->checkForEQHeader(*ts_header);
             if(curPayloadOffset >= 0) 
             {
-                std::println("Found beginning of new file in offset {}",curPayloadOffset);
+                std::println("in SEARCHING_FOR_HEADER: Found beginning of new file in offset {}\nand currentEQHeader is={}",curPayloadOffset,currentEQHeader|std::views::transform([](const auto val){return std::format("{:X}",val);}));
+                
                 this->eQHeader = parseEQHeader(this->currentEQHeader);
-                this->currentEQHeader = {}; //set to undefined {} is the closeest
+                this->currentEQHeader = {}; //set to undefined {} is the closest
                 
                 if(m_debug) {
                     std::println("Header file size: {}", this->eQHeader.file_size);
                 }
-                if(eQHeader.filename_length >= std::numeric_limits<uint8_t>::max()) throw std::logic_error("too many allocations in SEARCHING_FOR_HEADERS cond");
-                // std::println("parse_ts_packates() allocating filename_length: {}",eQHeader.filename_length);
-                m_buffer = std::vector<unsigned char>(eQHeader.filename_length); //ME: throws -> FIXED
+                if(eQHeader.filename_length >= std::numeric_limits<std::uint8_t>::max()) throw std::logic_error(std::format("too many allocations in state SEARCHING_FOR_HEADERS = {}",eQHeader.filename_length));
+                m_buffer = std::vector<unsigned char>(eQHeader.filename_length); 
                 bufferLength = 0;
                 
                 //this->bufferLength = 0;
