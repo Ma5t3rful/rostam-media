@@ -1,6 +1,6 @@
 #CMake and C++ version
 cmake_minimum_required(VERSION 3.31)
-project(rostam-media VERSION 1.8.7)
+project(rostam-media VERSION 1.9.7)
 set(CMAKE_CXX_STANDARD 26)
 
 # setup tgui
@@ -34,7 +34,7 @@ target_sources(${PROJECT_NAME} PRIVATE FILE_SET rostam_modules TYPE CXX_MODULES 
 target_sources(${PROJECT_NAME} PRIVATE FILE_SET rostam_core_module TYPE CXX_MODULES FILES src/core/rostam.cppm)
 target_sources(${PROJECT_NAME} PRIVATE FILE_SET costom_widgets TYPE CXX_MODULES FILES ${costom_widgets})
 target_sources(${PROJECT_NAME} PRIVATE FILE_SET version_module TYPE CXX_MODULES FILES ${CMAKE_CURRENT_BINARY_DIR}/version.cppm)
-target_compile_options(${PROJECT_NAME} PRIVATE -Wall -Wextra -Wpedantic -fhardened -fmodules)
+target_compile_options(${PROJECT_NAME} PRIVATE -Wall -Wextra -Wpedantic -fhardened -fmodules -fsanitize=address)
 # TODO: Maybe update the compiler and remove the workarounds
 if(WIN32) # compiler options and workarounds for windows
     add_definitions(-D_WIN32_WINNT=0x0601) # Windows 7 compatibility
@@ -43,7 +43,7 @@ if(WIN32) # compiler options and workarounds for windows
     target_link_libraries(${PROJECT_NAME} PRIVATE -lstdc++exp) # workaround for undefined reference for std::write_to_terminal...
 endif()
 target_link_libraries(${PROJECT_NAME} PRIVATE TGUI::TGUI uni-algo::uni-algo)
-target_link_options(${PROJECT_NAME} PUBLIC -static-libstdc++)
+target_link_options(${PROJECT_NAME} PUBLIC -static-libstdc++ -fsanitize=address)
 
 ###### INSTALLATION PROCESS ######
 include (GNUInstallDirs)
