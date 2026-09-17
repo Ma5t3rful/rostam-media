@@ -356,7 +356,7 @@ export class rostam{
             // Copy the bytes beginning at the header offset in the payload to this.currentEQHeader
             if(m_debug)
             {
-            std::println("trying to copy data in checkForEQHeader() second if-statement");
+                std::println("trying to copy data in checkForEQHeader() second if-statement");
                 std::println("payload to copy={}",std::span(payload.cbegin()+header_offset,payload.cend())|std::views::transform([](const auto val){return std::format("{:X}",val);}));
             }
             std::ranges::copy(payload.cbegin()+header_offset,payload.cend(),currentEQHeader.begin());
@@ -442,26 +442,26 @@ export class rostam{
                 | std::views::filter([](const auto c){const auto ascii_c = std::min<char32_t>(c,128);return not(isascii(ascii_c) and std::iscntrl(ascii_c))
                                                                                                             and c != 0xfffd 
                                                                                                             and c != U'%';}) // avoid utf-8 currupted chars
-                | std::views::transform ([windows_illigal=std::u32string_view(U":<>|*?\"\\/")](const auto c){return windows_illigal.contains(c)?U'-':c;}) // replace illigal chars
+                | std::views::transform ([windows_illigal=std::u32string_view(U":<>|*?\"")](const auto c){return windows_illigal.contains(c)?U'-':c;}) // replace illigal chars
                 | una::ranges::to_utf8<std::string>();
+
 
                 std::println("Extracting file: {}", filename);
                 // TODO is Number big enough?
                 m_buffer = std::vector<unsigned char>(this->eQHeader.file_size);
                 bufferLength = 0;
 
-                // then write files to the dir as they are extracted
                 const auto output_file_path = m_output_path/(filename + ".part");
+                std::filesystem::create_directories(output_file_path.parent_path());
                 
-                //try {
-                // Open file for writing
+                // then write files to the dir as they are extracted
                 // TODO change to async open call
                 if(m_current_output_file.is_open())std::println("Warning: another file is already open. Opening another one anyway :/");
                 m_current_output_file.open(output_file_path,std::ios::binary);
                 if(!m_current_output_file)throw std::runtime_error("[Rostam Core Error] Could not open the output file. The program might opened a file twice(logical) or it's a premission problem(runtime).");
-                // this.curOutFile = fs.openSync(filePath, 'w', 0o640);
-                //} 
-                // catch(...) {std::println("error");}
+
+                
+                
             }        
         } 
         if(m_state == rostam::STATE::READING_FILE) 
