@@ -10,6 +10,8 @@ module;
 #include <stdexcept>
 #include <filesystem>
 #include <optional>
+#include <sstream>
+#include <iomanip>
 #if _WIN32
 #include <windows.h>
 #endif
@@ -38,8 +40,9 @@ namespace cross_platform
     {
         // TODO: overload for std::filesystem::path
         #if __unix__
-        const auto xdg_open = std::format("xdg-open \"{}\"",link);
-        const auto result   = std::system (xdg_open.c_str());
+        auto xdg_open = std::ostringstream ();
+        xdg_open << "xdg-open " << std::quoted(link);
+        const auto result = std::system (xdg_open.str().c_str());
         if(result != 0) throw std::runtime_error(std::format("xdg-open returned non-zero: {}",result));
         #elif _WIN32 
         // Becuse we're using std::string_view, the safe approch is to copy to std::string or std::filesystem::path first to guarantee null-termination.
