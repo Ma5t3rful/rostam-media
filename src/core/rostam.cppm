@@ -65,7 +65,8 @@ export class rostam{
     m_state(STATE::SEARCHING_FOR_HEADER),
     currentEQHeaderBytesRead(0),
     previousPacketMagicBytePatternIndex(0),
-    bufferLength(0),
+    m_buffer_size(0),
+    m_previous_cc(-1),
     m_file_data_read(0),
     m_cancel_flag(false),
     m_debug(true),
@@ -74,6 +75,18 @@ export class rostam{
         
     }
     
+    // calls extract for each ts file.
+    void extract_all (const std::filesystem::path& input, const std::filesystem::path& output)
+    {
+        auto list_files = 
+            std::filesystem::directory_iterator(input)
+            | std::views::filter([](const auto& p){return p.path().extension() == ".ts";}) 
+            | std::ranges::to<std::vector<std::filesystem::path>>();
+        std::ranges::sort(list_files,[](const auto& a,const auto& b){return std::filesystem::last_write_time(a)<std::filesystem::last_write_time(b);}); //sort by date
+        std::ranges::for_each(list_files,std::bind(&rostam::extract,this,std::placeholders::_1,std::ref(output)));
+        if(m_progress_callback) m_progress_callback(100);
+    }
+
     void extract (const std::filesystem::path& input, const std::filesystem::path& output)
     {
         constexpr static auto ts_packet_size = 188uz;
@@ -94,7 +107,6 @@ export class rostam{
             }
             if(m_cancel_flag) break; // This will cancel the extraction operation upon request.
         }
-        if(m_progress_callback)m_progress_callback(100);
     }
 
     void request_cancel ()
@@ -120,13 +132,14 @@ export class rostam{
         m_state = rostam::STATE::SEARCHING_FOR_HEADER;
         this->eQHeader = {0,0,0,0};
         m_buffer.erase(m_buffer.begin(),m_buffer.end());
-        this->bufferLength = 0; // How much has been read into the buffer
+        this->m_buffer_size = 0; // How much has been read into the buffer
         this->filename.erase(0); // Filename of current file being extracted (if any)
         // this.fileData = []; // Data that has been read for current file. Array of Uint8Arrays (I think its never used)
         m_file_data_read = 0uz; // How much file data has been read so far
         currentEQHeader.erase(currentEQHeader.begin(),currentEQHeader.end());
         currentEQHeaderBytesRead = 0;
         previousPacketMagicBytePatternIndex = 0;
+        m_previous_cc = -1;
         m_cancel_flag.store(false);
     }
 
@@ -219,6 +232,7 @@ export class rostam{
         // Skip ts packets when TEI is detected.
         if(packet[1] & (1 << 7)) 
         {
+            // std::println("WARNING: TEI Detected.");
             header.TEI = true;
             return header;
         }
@@ -276,14 +290,14 @@ export class rostam{
         if(payload.size() >= 12) 
         {
             const auto magic_bytes_search = std::ranges::search(payload,EQSAT_MAGIC_BYTES);
-            const auto magicBytesOffset = std::distance(payload.cbegin(),magic_bytes_search.cbegin());
+            const auto magic_bytes_offset = std::distance(payload.cbegin(),magic_bytes_search.cbegin());
             
             if(not magic_bytes_search.empty())
             {
-                std::println("found magic bytes in offset: {}", magicBytesOffset);
+                std::println("found magic bytes in offset: {}", magic_bytes_offset);
                 // printHex("Payload: ", payload.subarray(magicBytesOffset, magicBytesOffset+16), 16);
                 previousPacketMagicBytePatternIndex = 0;
-                return magicBytesOffset + EQSAT_MAGIC_BYTES.size();
+                return magic_bytes_offset + EQSAT_MAGIC_BYTES.size();
             }
         }
 
@@ -335,7 +349,7 @@ export class rostam{
             std::println("trying to copy from payload to currentEQHeader in checkForEQHeader() in the first if-statement to_copy is: {} and payload.size() is: {}",to_copy,payload.size());
             if(to_copy > payload.size())throw std::logic_error("to_copy > payload.size()");
             if(to_copy > currentEQHeader.size() - currentEQHeaderBytesRead)throw std::logic_error("currentEQHeader buffer overflow");
-            std::ranges::copy_n(payload.begin(), to_copy, currentEQHeader.begin() + currentEQHeaderBytesRead);
+            std::ranges::copy_n(payload.cbegin(), to_copy, currentEQHeader.begin() + currentEQHeaderBytesRead);
             // buffer.copy (target              , targetStart                  , sourceStart, sourceEnd);
             // payload.copy(this.currentEQHeader, this.currentEQHeaderBytesRead, 0, to_copy);
             if(to_copy < remaining_bytes) return -1;
@@ -385,7 +399,6 @@ export class rostam{
         // If parseTSHeader() returns false then the PID didn't match
         // or the header failed to parse so skip the packet
         if(!ts_header) return;
-
         // This is incremented every time some of the current packet is consumed
         // e.g. by reading the header or filename
         auto curPayloadOffset = 0ll;
@@ -405,7 +418,7 @@ export class rostam{
                 }
                 if(eQHeader.filename_length >= std::numeric_limits<std::uint8_t>::max()) throw std::logic_error(std::format("too many allocations in state SEARCHING_FOR_HEADERS = {}",eQHeader.filename_length));
                 m_buffer = std::vector<unsigned char>(eQHeader.filename_length); 
-                bufferLength = 0;
+                m_buffer_size = 0;
                 
                 //this->bufferLength = 0;
                 // tsHeader.payloadOffset += EQSAT_HEADER_SIZE;
@@ -419,16 +432,16 @@ export class rostam{
             //std::println("parse_ts_packets() -> state machine changed to: STATE_READING_FILENAME");
             if(!ts_header->hasPayload) return;
             //std::println("we have payload!");
-            const auto toCopyMax = m_buffer.size() - this->bufferLength;
+            const auto toCopyMax = m_buffer.size() - m_buffer_size;
             const auto toCopy = std::min(ts_header->payload.size() - static_cast<std::size_t>(curPayloadOffset), toCopyMax);
             
-            std::ranges::copy_n(ts_header->payload.begin()+curPayloadOffset,toCopy,m_buffer.begin()+bufferLength);
+            std::ranges::copy_n(ts_header->payload.cbegin()+curPayloadOffset,toCopy,m_buffer.begin()+m_buffer_size);
 
             //tsHeader->payload.copy(this.buffer, this.bufferLength, curPayloadOffset, curPayloadOffset + toCopy);
-            this->bufferLength += toCopy;
+            m_buffer_size += toCopy;
             curPayloadOffset += toCopy;
 
-            if(this->bufferLength >= m_buffer.size())
+            if(m_buffer_size >= m_buffer.size())
             {
                 m_state = rostam::STATE::READING_FILE;
 
@@ -448,7 +461,7 @@ export class rostam{
                 std::println("Extracting file: {}", filename);
                 // TODO is Number big enough?
                 m_buffer = std::vector<unsigned char>(this->eQHeader.file_size);
-                bufferLength = 0;
+                m_buffer_size = 0;
 
                 const auto output_file_path = m_output_path/(filename + ".part");
                 std::filesystem::create_directories(output_file_path.parent_path());
@@ -458,22 +471,23 @@ export class rostam{
                 if(m_current_output_file.is_open())std::println("Warning: another file is already open. Opening another one anyway :/");
                 m_current_output_file.open(output_file_path,std::ios::binary);
                 if(!m_current_output_file)throw std::runtime_error("[Rostam Core Error] Could not open the output file. The program might opened a file twice(logical) or it's a premission problem(runtime).");
-
-                
-                
             }        
-        } 
+        }
         if(m_state == rostam::STATE::READING_FILE) 
         {
             if(!ts_header->hasPayload) return;
             
+            if(const auto cc_diff = ts_header->CC - m_previous_cc; 
+            cc_diff != 1 and cc_diff != -15 and m_previous_cc != -1)
+                std::println("contnuity counter diff detected: prev was={:0<2} and current is={:0<2}",m_previous_cc,ts_header->CC);
+            
+            m_previous_cc = ts_header->CC;
             const auto to_read = std::min(ts_header->payload.size() - static_cast<std::size_t>(curPayloadOffset), this->eQHeader.file_size - m_file_data_read);
 
             // subspan makes a span, not a copy
             // but since that's just the payload + 4 bytes 
             // it seems like a good trade-off to avoid an extra copy operation
             
-            // MY TODO : FIGURE THIS OUT
             const auto chunk = ts_header->payload.subspan(curPayloadOffset, to_read);
             
             if(m_current_output_file) 
@@ -481,12 +495,6 @@ export class rostam{
                 // MY TODO: this is really inefficent I need to rip a lot of things to convert the payload to unsigned char
                 // It's safe at least
                 for(const auto s : chunk)m_current_output_file.put(s);
-                // fs.writeSync(this->m_current_output_file, chunk);
-                
-                //}catch(...) {
-                
-                   //return cb(err); 
-                //}
             }
             /*else 
             {
@@ -511,7 +519,8 @@ export class rostam{
     
     
     private:
-
+    struct extracted_file {bool currupted;std::filesystem::path path;};
+    std::vector<extracted_file> m_extracted_files;
     std::filesystem::path m_output_path;
     STATE m_state;
     EQHeader eQHeader;
@@ -521,7 +530,8 @@ export class rostam{
     std::size_t previousPacketMagicBytePatternIndex;
     std::ofstream m_current_output_file;
     std::string filename;
-    std::size_t bufferLength;
+    std::size_t m_buffer_size;
+    std::int8_t m_previous_cc;
     std::size_t m_file_data_read;
     std::atomic_bool m_cancel_flag;
     const bool m_debug;

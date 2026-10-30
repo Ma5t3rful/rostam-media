@@ -26,7 +26,7 @@ main_controls(tgui::GrowVerticalLayout::create()),
 rostam_logo_pic(std::make_shared<rostam_logo>()),
 options_button(tgui::Button::create("⁝")),
 inoutstuffgrid(tgui::Grid::create()),
-inputlbl(tgui::Label::create("Input TS file")),
+inputlbl(tgui::Label::create("Input TS Folder")),
 outputlbl(tgui::Label::create("Output Folder")),
 inputbtn(tgui::Button::create("Browse")),
 outputbtn(tgui::Button::create("Browse")),
@@ -87,11 +87,11 @@ m_rostam(std::bind_front(&MainWindow::on_extraction_progress,this))
 
 void MainWindow::on_input_btn_clicked()
 {
-    auto selected_folder = pfd::open_file("Select a TS input file","",{"All Files","*.ts"});
+    auto selected_folder = pfd::select_folder("Select a TS input folder","");
     if(auto res = selected_folder.result();
     not res.empty())
     {
-        m_inputaddr = std::move(res[0]);
+        m_inputaddr = std::move(res);
     }
     if(not m_inputaddr.empty() and not m_outputaddr.empty())extract_btn->setEnabled(true);
 }
@@ -122,7 +122,7 @@ void MainWindow::on_extract_button_clicked()
     extract_btn->setText("Cancel");
     if(m_extraction_progress_thrd.valid() and m_extraction_progress_thrd.wait_for(0ms) != std::future_status::ready)
         throw std::logic_error("Another thread is already running and the app requests for another one. This is not intended. Terminating...");
-    m_extraction_progress_thrd = std::async(std::launch::async,&rostam::extract,&m_rostam,m_inputaddr,m_outputaddr);
+    m_extraction_progress_thrd = std::async(std::launch::async,&rostam::extract_all,&m_rostam,m_inputaddr,m_outputaddr);
 }
 
 void MainWindow::on_open_out_folder_clicked()
