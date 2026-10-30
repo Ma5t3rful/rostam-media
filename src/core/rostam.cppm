@@ -216,9 +216,8 @@ export class rostam{
             return header;
         }
 
-        // Packet corrupted (FEC unable to correct)
-	    // packet[1].bit[15] == 1 means error (but packet[1] can only contain 8 bits. What is this?)
-        if(packet[1] & (1 << 15)) //this looks weired I predict that it would never run. I'll keep it there for now.
+        // Skip ts packets when TEI is detected.
+        if(packet[1] & (1 << 7)) 
         {
             header.TEI = true;
             return header;
