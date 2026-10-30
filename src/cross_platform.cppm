@@ -34,29 +34,35 @@ namespace cross_platform
         #endif
     }
 
-    // TODO: open_link overload for path
-
     auto open_link (const std::string_view link) -> void
     {
         // TODO: overload for std::filesystem::path
-        #if __unix__
-        auto xdg_open = std::ostringstream ();
-        xdg_open << "xdg-open " << std::quoted(link);
-        const auto result = std::system (xdg_open.str().c_str());
-        if(result != 0) throw std::runtime_error(std::format("xdg-open returned non-zero: {}",result));
-        #elif _WIN32 
-        // Becuse we're using std::string_view, the safe approch is to copy to std::string or std::filesystem::path first to guarantee null-termination.
-        if(link.starts_with("http") or link.starts_with("www"))
+        if constexpr(platform() == os::UNIX)
         {
-            const auto link_str = std::string(link);
-            const auto _ = ShellExecute(nullptr, "open", link_str.c_str(), nullptr, nullptr, SW_SHOW);
-            return;
+            auto xdg_open = std::ostringstream ();
+            xdg_open << "xdg-open " << std::quoted(link);
+            const auto result = std::system (xdg_open.str().c_str());
+            if(result != 0) throw std::runtime_error(std::format("xdg-open returned non-zero: {}",result));
         }
+        else if constexpr(platform() == os::WINDOWS)
+        {
+            // Becuse we're using std::string_view, the safe approch is to copy to std::string or std::filesystem::path first to guarantee null-termination.
+            if(link.starts_with("http") or link.starts_with("www"))
+            {
+                const auto link_str = std::string(link);
+                #if _WIN32 
+                const auto _ = ShellExecute(nullptr, "open", link_str.c_str(), nullptr, nullptr, SW_SHOW);
+                #endif
+                return;
+            }
+            const auto link_path = std::filesystem::path(link);
+            #if _WIN32 
+            const auto _ = ShellExecuteW(nullptr, L"explore", link_path.c_str(), nullptr, nullptr, SW_SHOW);
+            #endif
+        }
+
         
-        const auto link_path = std::filesystem::path(link);
-        const auto _ = ShellExecuteW(nullptr, L"explore", link_path.c_str(), nullptr, nullptr, SW_SHOW);
         
-        #endif
     }
 
     auto exe_path () -> std::filesystem::path
