@@ -1,4 +1,4 @@
-name: Build for Windows (cmake -> ninja -> mingw-w64-g++-15.2 -> cpack)
+name: Build for 32-bit Windows (cmake -> ninja -> mingw-w64-g++-15.2 -> cpack)
 
 on:
   push:
@@ -36,7 +36,7 @@ jobs:
     
       - name: Setup MinGW environment
         run: |
-          echo "${{ github.workspace }}\mingw\mingw64\bin" >> $env:GITHUB_PATH
+          echo "${{ github.workspace }}\mingw\mingw32\bin" >> $env:GITHUB_PATH
     
       - name: Verify compiler
         run: g++ --version
